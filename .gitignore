@@ -1,0 +1,9 @@
+*.out
+*.o
+*.gb
+*.exe
+*.obj
+*.dll
+GBemu
+*.jpg
+*.png
