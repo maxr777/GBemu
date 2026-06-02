@@ -3,6 +3,7 @@
 *.gb
 *.exe
 *.obj
+*.a
 *.dll
 GBemu
 *.jpg

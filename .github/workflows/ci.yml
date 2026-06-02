@@ -12,16 +12,10 @@ jobs:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Install dependencies
+      - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get install -y build-essential cmake libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
-          git clone --depth 1 --branch 5.5 https://github.com/raysan5/raylib.git /tmp/raylib
-          cmake -S /tmp/raylib -B /tmp/raylib/build -DBUILD_EXAMPLES=OFF
-          cmake --build /tmp/raylib/build
-          sudo cmake --install /tmp/raylib/build
+          sudo apt-get install -y build-essential libgl1-mesa-dev libx11-dev libxrandr-dev libxinerama-dev libxcursor-dev libxi-dev
 
       - name: Build
-        run: |
-          gcc -o GBemu desktop_gbemu.c -s -O2 -lraylib -lGL -lm \
-            -lpthread -ldl -lrt -lX11 -std=c11 -Wall
+        run: ./build.sh
