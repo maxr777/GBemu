@@ -1,5 +1,6 @@
 #include "constants.h"
 #include "raylib.h"
+#include "types.h"
 #include <stdbool.h>
 #include <string.h>
 
@@ -16,6 +17,8 @@ int main(int argc, char *argv[]) {
 			debug = true;
 	}
 
+	// platform_load_game(char *filepath);
+
 	SetTraceLogLevel(LOG_ERROR);
 
 	InitWindow(960, 540, "GBemu");
@@ -31,6 +34,9 @@ int main(int argc, char *argv[]) {
 			running = false;
 		if (IsKeyPressed(KEY_F11))
 			ToggleBorderlessWindowed();
+
+		// u8 opcode = read8(cpu.regs[PC].full);
+		// process_opcode(opcode);
 
 		const double frame_start = GetTime();
 
