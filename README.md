@@ -8,12 +8,6 @@ The project uses unity build approach (one big translation unit).
 
 The desktop entry point is in ```desktop_gbemu.c```
 
-## Dependencies
-
-#### Desktop
-- gcc
-- raylib
-
 ## Build
 
 Run ```./run.sh``` on linux
