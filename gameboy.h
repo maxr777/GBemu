@@ -50,34 +50,34 @@ typedef struct {
 } CPU;
 
 typedef struct {
-	uint8_t entry_point[4];
-	uint8_t nintendo_logo[48];
+	u8 entry_point[4];
+	u8 nintendo_logo[48];
 	char title[16]; // already includes manufacturer code
-	uint8_t cgb_flag;
-	uint16_t new_license_code;
-	uint8_t sgb_flag;
-	uint8_t cartridge_type;
-	uint8_t rom_size;
-	uint8_t ram_size;
-	uint8_t destination_code;
-	uint8_t old_licensee_code;
-	uint8_t mask_rom_version_number;
-	uint8_t header_checksum;
-	uint16_t global_checksum;
-} Cartridge_header;
+	u8 cgb_flag;
+	u16 new_license_code;
+	u8 sgb_flag;
+	u8 cartridge_type;
+	u8 rom_size;
+	u8 ram_size;
+	u8 destination_code;
+	u8 old_licensee_code;
+	u8 mask_rom_version_number;
+	u8 header_checksum;
+	u16 global_checksum;
+} CartridgeHeader;
 
 typedef struct {
-	uint8_t *game_rom;
+	u8 *game_rom;
 	size_t game_size;
-	Cartridge_header cartridge_header;
+	CartridgeHeader cartridge_header;
 	bool boot_rom_enabled;
-	const uint8_t boot_rom[256];
-	uint8_t current_rom_bank;
+	u8 *boot_rom;
+	u8 current_rom_bank;
 	int max_rom_banks;
-	uint8_t current_ram_bank;
+	u8 current_ram_bank;
 	// multiplied by 4 because of possible RAM banking, if no
 	// RAM banking then we simply can't access anything past 8192
-	uint8_t external_ram[EXTERN_RAM_SIZE * 4];
+	u8 external_ram[EXTERN_RAM_SIZE * 4];
 } ROM;
 
 typedef struct {
