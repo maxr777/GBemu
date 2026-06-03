@@ -9,10 +9,11 @@
 void platform_rom_load(const char *filename);
 void platform_message_log(const char *msg);
 void platform_screen_draw(u16 *framebuffer);
+void platform_play_sound();
 
 // =============================================
 
-enum RegisterNames {
+typedef enum {
 	AF,
 	BC,
 	DE,
@@ -20,15 +21,15 @@ enum RegisterNames {
 	SP, // always accessed as 16-bits
 	PC, // always accessed as 16-bits
 	REGISTER_COUNT
-};
+} Register_names;
 
-enum Flags {
+typedef enum {
 	Z, // zero flag
 	N, // subtract flag
 	H, // half carry flag
 	C, // carry flag
 	FLAG_COUNT
-};
+} Flags;
 
 // BC = Full 16 bit register
 // B = High 8 bits
