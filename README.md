@@ -8,6 +8,14 @@ The project uses unity build approach (one big translation unit).
 
 The desktop entry point is in ```desktop_gbemu.c```
 
+## Dependencies
+
+Linux: ```gcc```
+
+Windows: ```mingw```
+
 ## Build
 
-Run ```./run.sh``` on linux
+Run ```./run.sh``` on Linux.
+
+Run ```run.bat``` on Windows.

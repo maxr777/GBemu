@@ -5,7 +5,7 @@ on:
   pull_request:
 
 jobs:
-  build:
+  build-linux:
     runs-on: ubuntu-latest
 
     steps:
@@ -19,3 +19,22 @@ jobs:
 
       - name: Build
         run: ./build.sh
+
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Install MinGW
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          install: mingw-w64-x86_64-gcc
+
+      - name: Build
+        shell: cmd
+        run: |
+          set PATH=C:\msys64\mingw64\bin;%PATH%
+          build.bat
