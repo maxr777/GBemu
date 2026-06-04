@@ -1,6 +1,7 @@
 #ifndef GAMEBOY_H
 #define GAMEBOY_H
 
+#include "constants.h"
 #include "types.h"
 #include <stddef.h>
 
@@ -55,7 +56,7 @@ typedef struct {
 	u8 nintendo_logo[48];
 	char title[16]; // already includes manufacturer code
 	u8 cgb_flag;
-	u16 new_license_code;
+	char new_license_code[2];
 	u8 sgb_flag;
 	u8 cartridge_type;
 	u8 rom_size;

@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-clear
 ./build.sh
 clear
+./tests/test_runner
 ./GBemu

@@ -41,3 +41,6 @@ gcc -o GBemu desktop_gbemu.c -s -O2 \
     "$RAYLIB_LIB" \
     -lGL -lm -lpthread -ldl -lrt -lX11 \
     -std=c11 -Wall
+
+./tests/ROMs/compile_roms.sh
+gcc -o tests/test_runner tests/test_runner.c -std=c11 -Wall
