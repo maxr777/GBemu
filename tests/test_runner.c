@@ -37,8 +37,11 @@ static u64 now_ns(void) {
 int main(void) {
 	u64 start = now_ns();
 
+	puts("Test: correct game load\n");
 	test_game_load();
+	puts("Test: game missing when loading\n");
 	test_game_load_missing();
+	puts("Test: game too small to load\n");
 	test_game_load_too_small();
 
 	u64 end = now_ns();
