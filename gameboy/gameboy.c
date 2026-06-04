@@ -1,6 +1,7 @@
 #include "gameboy.h"
-#include "../platform/desktop.h"
 #include "../misc/types.h"
+#include "../platform/desktop.h"
+#include <stdbool.h>
 
 #include "cpu.c"
 

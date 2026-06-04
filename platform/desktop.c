@@ -1,10 +1,12 @@
 #include "../gameboy/gameboy.h"
+// This is for %" PRIu64 ", as u64 is %llu on Windows and %lu on Linux
+#include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 void platform_instruction_log(Gameboy *gb, const u8 opcode, const char *instr) {
-	printf("Cycle: %lu\tPC: 0x%04X\tOpcode: 0x%02X\t%-12s\tAF: %04X\t\tBC: %04X\tDE: %04X\tHL: %04X\tSP: %04X\tFlags: %c%c%c%c\n",
+	printf("Cycle: %" PRIu64 "\tPC: 0x%04X\tOpcode: 0x%02X\t%-12s\tAF: %04X\t\tBC: %04X\tDE: %04X\tHL: %04X\tSP: %04X\tFlags: %c%c%c%c\n",
 	       gb->cpu.cycle, gb->cpu.regs[PC].full, opcode, instr,
 	       gb->cpu.regs[AF].full, gb->cpu.regs[BC].full, gb->cpu.regs[DE].full, gb->cpu.regs[HL].full, gb->cpu.regs[SP].full,
 	       (gb->cpu.regs[AF].low & 0x80) ? 'Z' : '-',

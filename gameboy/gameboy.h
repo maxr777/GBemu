@@ -1,8 +1,9 @@
 #ifndef GAMEBOY_H
 #define GAMEBOY_H
 
-#include "constants.h"
 #include "../misc/types.h"
+#include "constants.h"
+#include <stdbool.h>
 #include <stddef.h>
 
 typedef enum {
