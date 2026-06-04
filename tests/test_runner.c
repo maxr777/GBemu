@@ -5,7 +5,7 @@
 #include <time.h>
 #endif
 
-#include "../types.h"
+#include "../misc/types.h"
 #include <stdint.h>
 #include <stdio.h>
 
@@ -33,10 +33,10 @@ static u64 now_ns(void) {
 }
 
 // clang-format off
-#include "../gameboy.c"
+#include "../gameboy/gameboy.c"
 #include "../external/cJSON/cJSON.c"
 #include "cpu_tests.c"
-#include "../desktop.c"
+#include "../platform/desktop.c"
 #include "game_load_test.c"
 // clang-format on
 

@@ -1,14 +1,14 @@
-#include "constants.h"
-#include "external/raylib/raylib.h"
-#include "gameboy.h"
-#include "types.h"
+#include "../gameboy/constants.h"
+#include "../external/raylib/raylib.h"
+#include "../gameboy/gameboy.h"
+#include "../misc/types.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 // clang-format off: unity build include order is intentional
-#include "gameboy.c"
+#include "../gameboy/gameboy.c"
 #include "desktop.c"
 // clang-format on
 

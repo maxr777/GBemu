@@ -1,7 +1,7 @@
 #ifndef DESKTOP_H
 #define DESKTOP_H
 
-#include "gameboy.h"
+#include "../gameboy/gameboy.h"
 
 void platform_game_load(const char *filepath, ROM *rom);
 void platform_message_log(const char *msg);

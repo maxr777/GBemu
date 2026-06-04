@@ -36,7 +36,7 @@ if [ ! -f "$RAYLIB_LIB" ]; then
     ar rcs "$RAYLIB_LIB" "${RAYLIB_OBJECTS[@]}"
 fi
 
-gcc -o GBemu desktop_gbemu.c -s -O2 \
+gcc -o GBemu platform/desktop_gbemu.c -s -O2 \
     -I"$RAYLIB" \
     "$RAYLIB_LIB" \
     -lGL -lm -lpthread -ldl -lrt -lX11 \

@@ -1,4 +1,4 @@
-#include "gameboy.h"
+#include "../gameboy/gameboy.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

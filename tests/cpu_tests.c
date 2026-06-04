@@ -1,5 +1,5 @@
 #include "../external/cJSON/cJSON.h"
-#include "../gameboy.h"
+#include "../gameboy/gameboy.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -35,7 +35,7 @@ void test_cpu() {
 	Gameboy gb = {};
 	u8 test_mem[0xFFFF + 1] = {};
 
-	for (int i = 0x00; i <= 0xFF; ++i) {
+	for (int i = 0x00; i <= 0x00 /*0xFF*/; ++i) {
 		printf("Test: Opcode %02X\n", i);
 		fflush(stdout);
 

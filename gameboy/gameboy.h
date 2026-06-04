@@ -2,7 +2,7 @@
 #define GAMEBOY_H
 
 #include "constants.h"
-#include "types.h"
+#include "../misc/types.h"
 #include <stddef.h>
 
 typedef enum {

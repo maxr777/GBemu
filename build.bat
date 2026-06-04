@@ -39,7 +39,7 @@ if not exist "%RAYLIB_LIB%" (
     if errorlevel 1 exit /b %errorlevel%
 )
 
-gcc -o GBemu.exe desktop_gbemu.c -s -O2 ^
+gcc -o GBemu.exe platform\desktop_gbemu.c -s -O2 ^
     -I"%RAYLIB%" ^
     "%RAYLIB_LIB%" ^
     -lopengl32 -lgdi32 -lwinmm ^
