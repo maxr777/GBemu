@@ -122,7 +122,7 @@ int main(int argc, char *argv[]) {
 
 	// This has to be called after InitWindow()
 	// because it requires an active OpenGL context
-	Texture2D test_background = LoadTexture("test.png");
+	Texture2D test_background = LoadTexture("tests/test.png");
 	Gameboy gameboy = {};
 
 	bool running = true;
