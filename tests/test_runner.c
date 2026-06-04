@@ -35,26 +35,16 @@ static u64 now_ns(void) {
 #include "game_load_test.c"
 
 int main(void) {
-	setvbuf(stdout, NULL, _IONBF, 0);
 
 	u64 start = now_ns();
 
-	puts("Test: correct game load");
 	test_game_load();
-	puts("Test: game missing when loading");
 	test_game_load_missing();
-	puts("Test: game too small to load");
 	test_game_load_too_small();
 
 	u64 end = now_ns();
 
-#ifdef _WIN32
-	system("cls");
-#else
-	system("clear");
-#endif
-
-	printf("tests passed in %.3fms\n", (end - start) / 1000000.0);
+	fprintf(stderr, "tests passed in %.3fms\n", (end - start) / 1000000.0);
 
 	return 0;
 }
