@@ -46,21 +46,5 @@ gcc -o GBemu.exe desktop_gbemu.c -s -O2 ^
     -std=c11 -Wall
 if errorlevel 1 exit /b %errorlevel%
 
-if not exist "tests\ROMs\cartridge_header_test.gb" (
-    where bash >nul 2>nul
-    if errorlevel 1 (
-        echo tests\ROMs\cartridge_header_test.gb is missing and bash was not found to run tests\ROMs\compile_roms.sh
-        exit /b 1
-    )
-
-    pushd tests\ROMs
-    bash compile_roms.sh
-    if errorlevel 1 (
-        popd
-        exit /b %errorlevel%
-    )
-    popd
-)
-
 gcc -o tests\test_runner.exe tests\test_runner.c -std=c11 -Wall
 if errorlevel 1 exit /b %errorlevel%

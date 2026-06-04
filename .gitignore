@@ -1,6 +1,7 @@
 *.out
 *.o
 *.gb
+!tests/ROMs/cartridge_header_test.gb
 *.exe
 *.obj
 *.a
