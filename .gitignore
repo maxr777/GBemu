@@ -6,6 +6,7 @@
 *.a
 *.dll
 GBemu
+test_runner
 *.jpg
 *.png
 external/raylib/st*
