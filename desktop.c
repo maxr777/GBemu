@@ -3,15 +3,23 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "gameboy.c"
+void platform_instruction_log(Gameboy *gb, const u8 opcode, const char *instr) {
+	printf("Cycle: %lu\tPC: 0x%04X\tOpcode: 0x%02X\t%-12s\tAF: %04X\t\tBC: %04X\tDE: %04X\tHL: %04X\tSP: %04X\tFlags: %c%c%c%c\n",
+	       gb->cpu.cycle, gb->cpu.regs[PC].full, opcode, instr,
+	       gb->cpu.regs[AF].full, gb->cpu.regs[BC].full, gb->cpu.regs[DE].full, gb->cpu.regs[HL].full, gb->cpu.regs[SP].full,
+	       (gb->cpu.regs[AF].low & 0x80) ? 'Z' : '-',
+	       (gb->cpu.regs[AF].low & 0x40) ? 'N' : '-',
+	       (gb->cpu.regs[AF].low & 0x20) ? 'H' : '-',
+	       (gb->cpu.regs[AF].low & 0x10) ? 'C' : '-');
+}
 
-int game_load(const char *filepath, ROM *rom) {
+void platform_game_load(const char *filepath, ROM *rom) {
 	memset(rom, 0, sizeof(*rom));
 
 	FILE *game_file = fopen(filepath, "rb");
 	if (!game_file) {
 		perror("fopen");
-		return 1;
+		return;
 	}
 
 	// the cartridge header itself goes to 0x014F (inclusive),
@@ -21,27 +29,27 @@ int game_load(const char *filepath, ROM *rom) {
 	if (rom->game_size < 0) {
 		perror("ftell");
 		fclose(game_file);
-		return 2;
+		return;
 	}
 
 	rewind(game_file);
 	if (rom->game_size < 0x0150) {
 		fprintf(stderr, "The ROM is too small\n");
 		fclose(game_file);
-		return 3;
+		return;
 	}
 
 	rom->game_rom = malloc(rom->game_size);
 	if (!rom->game_rom) {
 		perror("malloc");
 		fclose(game_file);
-		return 4;
+		return;
 	}
 
 	if (fread(rom->game_rom, sizeof(u8), rom->game_size, game_file) != rom->game_size) {
 		perror("fread");
 		fclose(game_file);
-		return 5;
+		return;
 	}
 
 	fclose(game_file);
@@ -94,6 +102,4 @@ int game_load(const char *filepath, ROM *rom) {
 
 	// BOOT_ROM is defined in gameboy.c
 	rom->boot_rom = BOOT_ROM;
-
-	return 0;
 }

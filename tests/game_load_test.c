@@ -4,13 +4,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "../desktop.c"
-
 static void check_game_load(const char *filepath, const ROM *expected) {
 	ROM rom = {};
-	int ret_code = game_load(filepath, &rom);
+	platform_game_load(filepath, &rom);
 
-	assert(ret_code == 0);
 	assert(rom.game_size == expected->game_size);
 	assert(rom.max_rom_banks == expected->max_rom_banks);
 
@@ -44,15 +41,18 @@ static void check_game_load(const char *filepath, const ROM *expected) {
 	free(rom.game_rom);
 }
 
-static void check_game_load_failure(const char *filepath, int expected_ret) {
-	ROM rom = {};
-	int ret_code = game_load(filepath, &rom);
-
-	assert(ret_code == expected_ret);
-	assert(rom.game_rom == NULL);
-}
+// static void check_game_load_failure(const char *filepath, int expected_ret) {
+// 	ROM rom = {};
+// 	int ret_code = platform_game_load(filepath, &rom);
+//
+// 	assert(ret_code == expected_ret);
+// 	assert(rom.game_rom == NULL);
+// }
 
 static void test_game_load(void) {
+	puts("Test: Load a correct ROM");
+	fflush(stdout);
+
 	ROM expected = {};
 
 	expected.game_size = 16384;
@@ -86,10 +86,21 @@ static void test_game_load(void) {
 }
 
 static void test_game_load_missing(void) {
-	check_game_load_failure("tests/does_not_exist.gb", 1);
+	puts("Test: Load a ROM that's missing");
+	fflush(stdout);
+
+	ROM rom = {};
+	platform_game_load("tests/does_not_exist.gb", &rom);
+
+	assert(rom.game_rom == NULL);
+	assert(rom.game_size == 0);
+	assert(rom.boot_rom == NULL);
 }
 
 static void test_game_load_too_small(void) {
+	puts("Test: Load a ROM that's too small");
+	fflush(stdout);
+
 	const char *filepath = "tests/tmp_small_rom.gb";
 	FILE *file = fopen(filepath, "wb");
 
@@ -98,6 +109,12 @@ static void test_game_load_too_small(void) {
 		fputc(0x00, file);
 	fclose(file);
 
-	check_game_load_failure(filepath, 3);
+	ROM rom = {};
+	platform_game_load(filepath, &rom);
+
+	assert(rom.game_rom == NULL);
+	assert(rom.game_size < 0x0150);
+	assert(rom.boot_rom == NULL);
+
 	assert(remove(filepath) == 0);
 }

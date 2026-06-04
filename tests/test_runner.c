@@ -32,7 +32,13 @@ static u64 now_ns(void) {
 #endif
 }
 
+// clang-format off
+#include "../gameboy.c"
+#include "../external/cJSON/cJSON.c"
+#include "cpu_tests.c"
+#include "../desktop.c"
 #include "game_load_test.c"
+// clang-format on
 
 int main(void) {
 
@@ -41,10 +47,11 @@ int main(void) {
 	test_game_load();
 	test_game_load_missing();
 	test_game_load_too_small();
+	test_cpu();
 
 	u64 end = now_ns();
 
-	fprintf(stderr, "tests passed in %.3fms\n", (end - start) / 1000000.0);
+	fprintf(stderr, "All tests passed in %.3fms\n", (end - start) / 1000000.0);
 
 	return 0;
 }

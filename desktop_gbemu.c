@@ -7,7 +7,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+// clang-format off: unity build include order is intentional
+#include "gameboy.c"
 #include "desktop.c"
+// clang-format on
 
 bool debug = true;
 
@@ -30,7 +33,7 @@ int main(int argc, char *argv[]) {
 	// This has to be called after InitWindow()
 	// because it requires an active OpenGL context
 	Texture2D test_background = LoadTexture("tests/test.png");
-	Gameboy gameboy = {};
+	// Gameboy gb = {};
 
 	bool running = true;
 	while (!WindowShouldClose() && running) {

@@ -5,15 +5,6 @@
 #include "types.h"
 #include <stddef.h>
 
-// =============================================
-
-void platform_rom_load(const char *filename);
-void platform_message_log(const char *msg);
-void platform_screen_draw(u16 *framebuffer);
-void platform_play_sound();
-
-// =============================================
-
 typedef enum {
 	AF,
 	BC,
