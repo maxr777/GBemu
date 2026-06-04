@@ -65,7 +65,6 @@ static void test_game_load(void) {
 
 	for (size_t i = 0; i < sizeof(expected.cartridge_header.nintendo_logo); ++i)
 		expected.cartridge_header.nintendo_logo[i] = (u8)i;
-	expected.cartridge_header.nintendo_logo[4] = 0xFF;
 
 	// \0\0\0\0\0 because the whole field is 11 bytes
 	memcpy(expected.cartridge_header.title, "HEADER_TEST\0\0\0\0\0", sizeof(expected.cartridge_header.title));
