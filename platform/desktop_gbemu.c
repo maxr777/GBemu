@@ -1,5 +1,5 @@
-#include "../gameboy/constants.h"
 #include "../external/raylib/raylib.h"
+#include "../gameboy/constants.h"
 #include "../gameboy/gameboy.h"
 #include "../misc/types.h"
 #include <stdbool.h>
@@ -8,7 +8,9 @@
 #include <string.h>
 
 // clang-format off: unity build include order is intentional
+#include "../gameboy/cpu.c"
 #include "../gameboy/gameboy.c"
+#include "../gameboy/memory.c"
 #include "desktop.c"
 // clang-format on
 

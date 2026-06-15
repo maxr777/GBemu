@@ -3,8 +3,6 @@
 #include "../platform/desktop.h"
 #include <stdbool.h>
 
-#include "cpu.c"
-
 static u8 BOOT_ROM[] = {
     0x31, 0xfe, 0xff, 0x21, 0xff, 0x9f, 0xaf, 0x32, 0xcb, 0x7c, 0x20, 0xfa,
     0x0e, 0x11, 0x21, 0x26, 0xff, 0x3e, 0x80, 0x32, 0xe2, 0x0c, 0x3e, 0xf3,
@@ -1066,11 +1064,11 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			if (debug) platform_instruction_log(gb, opcode, "NOP");
 			nop(gb);
 			break;
-		// 	case 0x01: {
-		// 		platform_instruction_log(opcode, "LD BC, n16");
-		// 		u16 n16 = read16(gb->cpu.regs[PC].full + 1);
-		// 		ld_r16_n16(&gb->cpu.regs[BC].full, n16);
-		// 	} break;
+		case 0x01: {
+			if (debug) platform_instruction_log(gb, opcode, "LD BC, n16");
+			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			ld_r16_n16(gb, &gb->cpu.regs[BC].full, n16);
+		} break;
 		// 	case 0x02:
 		// 		platform_instruction_log(opcode, "LD [BC], A");
 		// 		ld_a16_A(gb->cpu.regs[BC].full);

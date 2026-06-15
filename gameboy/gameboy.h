@@ -14,7 +14,7 @@ typedef enum {
 	SP, // always accessed as 16-bits
 	PC, // always accessed as 16-bits
 	REGISTER_COUNT
-} Register_names;
+} RegisterName;
 
 typedef enum {
 	Z, // zero flag
@@ -75,8 +75,31 @@ typedef struct {
 } ROM;
 
 typedef struct {
+	u8 ram[8192]; // TODO: size change
+	u8 vram[VRAM_SIZE];
+	u8 io_registers[128];
+	u8 oam[160];
+	u8 hram[127];
+	bool display[160][144];
+} Memory;
+
+typedef struct {
 	CPU cpu;
 	ROM rom;
+	Memory memory;
 } Gameboy;
+
+// ==================== CPU DECLARATIONS ====================
+
+void nop(Gameboy *gb);
+void ld_r16_n16(Gameboy *gb, u16 *dest, const u16 val);
+
+// ==================== MEMORY DECLARATIONS ====================
+
+void write16(Memory *mem, const u16 addr, const u16 val);
+void write8(Memory *mem, const u16 addr, const u8 val);
+
+u16 read16(const Memory *mem, const u16 addr);
+u8 read8(const Memory *mem, const u16 addr);
 
 #endif

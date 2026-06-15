@@ -23,19 +23,18 @@ typedef struct {
 } TestState;
 
 void test_state_print(TestState *test) {
-	printf("a: %d\nb: %d\nc: %d\nd: %d\ne: %d\nf: %d\nh: %d\nl: %d\npc: %d\nsp: %d\n",
+	printf("a: 0x%02x\nb: 0x%02x\nc: 0x%02x\nd: 0x%02x\ne: 0x%02x\nf: 0x%02x\nh: 0x%02x\nl: 0x%02x\npc: 0x%02x\nsp: 0x%02x\n",
 	       test->a, test->b, test->c, test->d, test->e, test->f, test->h, test->l, test->pc, test->sp);
 
 	for (int i = 0; i < test->mem_size; ++i) {
-		printf("address: %d\nvalue: %d\n", test->mem_addr[i], test->mem_val[i]);
+		printf("address: 0x%02x\nvalue: 0x%02x\n", test->mem_addr[i], test->mem_val[i]);
 	}
 }
 
 void test_cpu() {
 	Gameboy gb = {};
-	u8 test_mem[0xFFFF + 1] = {};
 
-	for (int i = 0x00; i <= 0x00 /*0xFF*/; ++i) {
+	for (int i = 0x00; i <= 0x01 /*0xFF*/; ++i) {
 		printf("Test: Opcode %02X\n", i);
 		fflush(stdout);
 
@@ -145,12 +144,17 @@ void test_cpu() {
 			gb.cpu.regs[DE].low = test_initial.e;
 			gb.cpu.regs[HL].high = test_initial.h;
 			gb.cpu.regs[HL].low = test_initial.l;
-			gb.cpu.regs[PC].full = test_initial.pc;
+			// These CPU tests provide the opcode separately and set PC as if the
+			// opcode fetch already advanced it. opcode_execute() expects PC to
+			// still point at the opcode, because each instruction advances PC by
+			// its full length - that's why I use PC - 1 here
+			gb.cpu.regs[PC].full = test_initial.pc - 1;
 			gb.cpu.regs[SP].full = test_initial.sp;
 
 			for (int k = 0; k < test_initial.mem_size; ++k) {
-				test_mem[test_initial.mem_addr[k]] =
-				    test_initial.mem_val[k];
+				// test_mem[test_initial.mem_addr[k]] =
+				//     test_initial.mem_val[k];
+				write8(&gb.memory, test_initial.mem_addr[k], test_initial.mem_val[k]);
 			}
 
 			opcode_execute(i, &gb, false);
@@ -222,11 +226,17 @@ void test_cpu() {
 			if (gb.cpu.regs[DE].low != test_expected.e) pass = false;
 			if (gb.cpu.regs[HL].high != test_expected.h) pass = false;
 			if (gb.cpu.regs[HL].low != test_expected.l) pass = false;
-			if (gb.cpu.regs[PC].full != test_expected.pc) pass = false;
+			// These CPU tests provide the opcode separately and set PC as if the
+			// opcode fetch already advanced it. opcode_execute() expects PC to
+			// still point at the opcode, because each instruction advances PC by
+			// its full length - that's why I use PC - 1 here
+			if (gb.cpu.regs[PC].full != test_expected.pc - 1) pass = false;
 			if (gb.cpu.regs[SP].full != test_expected.sp) pass = false;
 
 			for (int k = 0; k < test_expected.mem_size; ++k) {
-				if (test_mem[test_expected.mem_addr[k]] !=
+				// if (test_mem[test_expected.mem_addr[k]] !=
+				//     test_expected.mem_val[k]) pass = false;
+				if (read8(&gb.memory, test_expected.mem_addr[k]) !=
 				    test_expected.mem_val[k]) pass = false;
 			}
 
@@ -252,7 +262,8 @@ void test_cpu() {
 				temp.mem_val = malloc(sizeof(u8) * temp.mem_size);
 				for (int k = 0; k < temp.mem_size; ++k) {
 					temp.mem_addr[k] = test_expected.mem_addr[k];
-					temp.mem_val[k] = test_mem[temp.mem_addr[k]];
+					// temp.mem_val[k] = test_mem[temp.mem_addr[k]];
+					temp.mem_val[k] = read8(&gb.memory, temp.mem_addr[k]);
 				}
 
 				printf("CURRENT VALUES:\n");
