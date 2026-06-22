@@ -1,10 +1,6 @@
 #include "constants.h"
 #include "gameboy.h"
 
-#ifdef CPU_TEST
-uint8_t test_memory[0xFFFF + 1] = {0};
-#endif
-
 void write16(Memory *mem, const u16 addr, const u16 val) {
 	write8(mem, addr, val);
 	write8(mem, addr + 1, val >> 8);
@@ -16,7 +12,7 @@ u16 read16(const Memory *mem, const u16 addr) {
 
 void write8(Memory *mem, const u16 addr, const u8 val) {
 #ifdef CPU_TEST
-	test_memory[addr] = val;
+	mem->test_memory[addr] = val;
 #else
 	// if (addr < ROM_BANK_N_ADDR)
 	// 	rom_write(addr, val);
@@ -70,7 +66,7 @@ void write8(Memory *mem, const u16 addr, const u8 val) {
 
 u8 read8(const Memory *mem, const u16 addr) {
 #ifdef CPU_TEST
-	return test_memory[addr];
+	return mem->test_memory[addr];
 #else
 	// if (addr < ROM_BANK_N_ADDR)
 	// 	return rom_read(addr);

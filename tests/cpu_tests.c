@@ -82,6 +82,8 @@ void test_cpu() {
 
 			cJSON *name = cJSON_GetObjectItem(item, "name");
 
+			gb = (Gameboy){0};
+
 			TestState test_initial = {};
 
 			{
@@ -158,6 +160,10 @@ void test_cpu() {
 			}
 
 			opcode_execute(i, &gb, false);
+			if (i == 0xCB) {
+				u8 prefixed_opcode = read8(&gb.memory, gb.cpu.regs[PC].full);
+				opcode_execute(prefixed_opcode, &gb, false);
+			}
 
 			TestState test_expected = {};
 
@@ -230,7 +236,8 @@ void test_cpu() {
 			// opcode fetch already advanced it. opcode_execute() expects PC to
 			// still point at the opcode, because each instruction advances PC by
 			// its full length - that's why I use PC - 1 here
-			if (gb.cpu.regs[PC].full != test_expected.pc - 1) pass = false;
+			u16 expected_pc = (i == 0xCB) ? test_expected.pc : test_expected.pc - 1;
+			if (gb.cpu.regs[PC].full != expected_pc) pass = false;
 			if (gb.cpu.regs[SP].full != test_expected.sp) pass = false;
 
 			for (int k = 0; k < test_expected.mem_size; ++k) {
