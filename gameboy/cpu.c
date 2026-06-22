@@ -1,6 +1,5 @@
 #include "../platform/desktop.h"
 #include "gameboy.h"
-#include <stdio.h>
 
 /*
  * I think passing the state and then the dest and val pointers isn't the cleanest
@@ -1170,7 +1169,7 @@ void ei(Gameboy *gb) {
 }
 
 void halt(Gameboy *gb) {
-	fprintf(stderr, "halt() is a stub - TODO implementation\n");
+	platform_error_log("halt() is a stub - TODO implementation\n");
 
 	gb->cpu.regs[PC].full += 1;
 }
@@ -1206,7 +1205,7 @@ void nop(Gameboy *gb) {
 }
 
 void stop_n8(Gameboy *gb, const u8 val) {
-	fprintf(stderr, "stop() is a stub - TODO implementation\n");
+	platform_error_log("stop() is a stub - TODO implementation\n");
 	// TODO: Remember about the divider register (0xFF04)
 
 	gb->cpu.regs[PC].full += 2;
