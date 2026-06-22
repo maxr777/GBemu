@@ -2,16 +2,17 @@
 #include "../gameboy/constants.h"
 #include "../gameboy/gameboy.h"
 #include "../misc/types.h"
+#include "desktop.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
 // clang-format off: unity build include order is intentional
-#include "../gameboy/cpu.c"
-#include "../gameboy/gameboy.c"
-#include "../gameboy/memory.c"
 #include "desktop.c"
+#include "../gameboy/cpu.c"
+#include "../gameboy/memory.c"
+#include "../gameboy/gameboy.c"
 // clang-format on
 
 bool debug = true;
@@ -26,6 +27,8 @@ int main(int argc, char *argv[]) {
 		if (strcmp(argv[i], "-d") == 0)
 			debug = true;
 	}
+
+	// Gameboy gb = gameboy_initialize(argv[1]);
 
 	SetTraceLogLevel(LOG_ERROR);
 

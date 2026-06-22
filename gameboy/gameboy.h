@@ -89,12 +89,16 @@ typedef struct {
 	Memory memory;
 } Gameboy;
 
-// ==================== CPU DECLARATIONS ====================
+// ==================== DECLARATIONS ====================
+
+Gameboy gameboy_initialize(const char *filepath);
+
+// ==================== CPU ====================
 
 void nop(Gameboy *gb);
 void ld_r16_n16(Gameboy *gb, u16 *dest, const u16 val);
 
-// ==================== MEMORY DECLARATIONS ====================
+// ==================== MEMORY ====================
 
 void write16(Memory *mem, const u16 addr, const u16 val);
 void write8(Memory *mem, const u16 addr, const u8 val);

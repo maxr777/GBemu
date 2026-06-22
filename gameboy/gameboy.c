@@ -27,6 +27,17 @@ static u8 BOOT_ROM[] = {
     0x4d, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x3e, 0x01, 0xe0, 0x50};
 
+Gameboy gameboy_initialize(const char *filepath) {
+	Gameboy gb = {};
+
+	platform_game_load(filepath, &gb.rom);
+
+	gb.rom.boot_rom = BOOT_ROM;
+	gb.rom.boot_rom_enabled = true;
+
+	return gb;
+}
+
 void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 	if (gb->cpu.prefix) {
 		// ==================== PREFIX ====================
@@ -1069,27 +1080,27 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
 			ld_r16_n16(gb, &gb->cpu.regs[BC].full, n16);
 		} break;
-		// 	case 0x02:
-		// 		platform_instruction_log(opcode, "LD [BC], A");
-		// 		ld_a16_A(gb->cpu.regs[BC].full);
-		// 		break;
-		// 	case 0x03:
-		// 		platform_instruction_log(opcode, "INC BC");
-		// 		inc_r16(&gb->cpu.regs[BC].full);
-		// 		break;
-		// 	case 0x04:
-		// 		platform_instruction_log(opcode, "INC B");
-		// 		inc_r8(&gb->cpu.regs[BC].high);
-		// 		break;
-		// 	case 0x05:
-		// 		platform_instruction_log(opcode, "DEC B");
-		// 		dec_r8(&gb->cpu.regs[BC].high);
-		// 		break;
-		// 	case 0x06: {
-		// 		platform_instruction_log(opcode, "LD B, n8");
-		// 		u8 n8 = read8(gb->cpu.regs[PC].full + 1);
-		// 		ld_r8_n8(&gb->cpu.regs[BC].high, n8);
-		// 	} break;
+		case 0x02:
+			if (debug) platform_instruction_log(gb, opcode, "LD [BC], A");
+			ld_a16_A(gb, gb->cpu.regs[BC].full);
+			break;
+		case 0x03:
+			if (debug) platform_instruction_log(gb, opcode, "INC BC");
+			inc_r16(gb, &gb->cpu.regs[BC].full);
+			break;
+		case 0x04:
+			if (debug) platform_instruction_log(gb, opcode, "INC B");
+			inc_r8(gb, &gb->cpu.regs[BC].high);
+			break;
+		case 0x05:
+			if (debug) platform_instruction_log(gb, opcode, "DEC B");
+			dec_r8(gb, &gb->cpu.regs[BC].high);
+			break;
+		case 0x06: {
+			if (debug) platform_instruction_log(gb, opcode, "LD B, n8");
+			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			ld_r8_n8(gb, &gb->cpu.regs[BC].high, n8);
+		} break;
 		// 	case 0x07:
 		// 		platform_instruction_log(opcode, "RLCA");
 		// 		rlca();

@@ -5,6 +5,10 @@
 #include <stdlib.h>
 #include <string.h>
 
+void platform_error_log(const char *msg) {
+	fprintf(stderr, "%s", msg);
+}
+
 void platform_instruction_log(Gameboy *gb, const u8 opcode, const char *instr) {
 	printf("Cycle: %" PRIu64 "\tPC: 0x%04X\tOpcode: 0x%02X\t%-12s\tAF: %04X\t\tBC: %04X\tDE: %04X\tHL: %04X\tSP: %04X\tFlags: %c%c%c%c\n",
 	       gb->cpu.cycle, gb->cpu.regs[PC].full, opcode, instr,
@@ -103,5 +107,5 @@ void platform_game_load(const char *filepath, ROM *rom) {
 	}
 
 	// BOOT_ROM is defined in gameboy.c
-	rom->boot_rom = BOOT_ROM;
+	// rom->boot_rom = BOOT_ROM;
 }

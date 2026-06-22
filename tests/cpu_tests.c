@@ -34,7 +34,7 @@ void test_state_print(TestState *test) {
 void test_cpu() {
 	Gameboy gb = {};
 
-	for (int i = 0x00; i <= 0x01 /*0xFF*/; ++i) {
+	for (int i = 0x00; i <= 0xFF; ++i) {
 		printf("Test: Opcode %02X\n", i);
 		fflush(stdout);
 

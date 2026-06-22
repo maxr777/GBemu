@@ -1,4 +1,5 @@
 #include "../gameboy/gameboy.h"
+#include "../platform/desktop.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,7 +81,6 @@ static void test_game_load(void) {
 	expected.cartridge_header.mask_rom_version_number = 0x03;
 	expected.cartridge_header.header_checksum = 0x67;
 	expected.cartridge_header.global_checksum = 0x770B;
-	expected.boot_rom = BOOT_ROM;
 
 	check_game_load("tests/ROMs/cartridge_header_test.gb", &expected);
 }
