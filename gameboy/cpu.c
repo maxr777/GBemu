@@ -233,8 +233,8 @@ void adc_A_r8(Gameboy *gb, const u8 src) {
 	set_flag(&gb->cpu, N, false);
 	bool c = get_flag(&gb->cpu, C);
 
-	(gb->cpu.regs[AF].high & 0x0F) + (src & 0x0F) + c > 0x0F ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	(u16) gb->cpu.regs[AF].high + src + c > 0x00FF ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (gb->cpu.regs[AF].high & 0x0F) + (src & 0x0F) + c > 0x0F);
+	set_flag(&gb->cpu, C, (u16)gb->cpu.regs[AF].high + src + c > 0x00FF);
 
 	gb->cpu.regs[AF].high += src + c;
 	set_flag(&gb->cpu, Z, !gb->cpu.regs[AF].high);
@@ -248,8 +248,8 @@ void adc_A_aHL(Gameboy *gb) {
 	bool c = get_flag(&gb->cpu, C);
 	u8 val = read8(&gb->memory, gb->cpu.regs[HL].full);
 
-	(gb->cpu.regs[AF].high & 0x0F) + (val & 0x0F) + c > 0x0F ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	(u16) gb->cpu.regs[AF].high + val + c > 0x00FF ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (gb->cpu.regs[AF].high & 0x0F) + (val & 0x0F) + c > 0x0F);
+	set_flag(&gb->cpu, C, (u16)gb->cpu.regs[AF].high + val + c > 0x00FF);
 
 	gb->cpu.regs[AF].high += val + c;
 	set_flag(&gb->cpu, Z, !gb->cpu.regs[AF].high);
@@ -262,8 +262,8 @@ void adc_A_n8(Gameboy *gb, const u8 val) {
 	set_flag(&gb->cpu, N, false);
 	bool c = get_flag(&gb->cpu, C);
 
-	(gb->cpu.regs[AF].high & 0x0F) + (val & 0x0F) + c > 0x0F ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	(u16) gb->cpu.regs[AF].high + val + c > 0x00FF ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (gb->cpu.regs[AF].high & 0x0F) + (val & 0x0F) + c > 0x0F);
+	set_flag(&gb->cpu, C, (u16)gb->cpu.regs[AF].high + val + c > 0x00FF);
 
 	gb->cpu.regs[AF].high += val + c;
 	set_flag(&gb->cpu, Z, !gb->cpu.regs[AF].high);
@@ -275,8 +275,8 @@ void adc_A_n8(Gameboy *gb, const u8 val) {
 void sub_A_r8(Gameboy *gb, const u8 src) {
 	set_flag(&gb->cpu, N, true);
 
-	(src & 0x0F) > (gb->cpu.regs[AF].high & 0x0F) ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	src > gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (src & 0x0F) > (gb->cpu.regs[AF].high & 0x0F));
+	set_flag(&gb->cpu, C, src > gb->cpu.regs[AF].high);
 
 	gb->cpu.regs[AF].high -= src;
 	set_flag(&gb->cpu, Z, !gb->cpu.regs[AF].high);
@@ -289,8 +289,8 @@ void sub_A_aHL(Gameboy *gb) {
 	u8 val = read8(&gb->memory, gb->cpu.regs[HL].full);
 
 	set_flag(&gb->cpu, N, true);
-	(val & 0x0F) > (gb->cpu.regs[AF].high & 0x0F) ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	val > gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (val & 0x0F) > (gb->cpu.regs[AF].high & 0x0F));
+	set_flag(&gb->cpu, C, val > gb->cpu.regs[AF].high);
 
 	gb->cpu.regs[AF].high -= val;
 	set_flag(&gb->cpu, Z, !gb->cpu.regs[AF].high);
@@ -301,8 +301,8 @@ void sub_A_aHL(Gameboy *gb) {
 
 void sub_A_n8(Gameboy *gb, const u8 val) {
 	set_flag(&gb->cpu, N, true);
-	(val & 0x0F) > (gb->cpu.regs[AF].high & 0x0F) ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	val > gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (val & 0x0F) > (gb->cpu.regs[AF].high & 0x0F));
+	set_flag(&gb->cpu, C, val > gb->cpu.regs[AF].high);
 
 	gb->cpu.regs[AF].high -= val;
 	set_flag(&gb->cpu, Z, !gb->cpu.regs[AF].high);
@@ -344,8 +344,8 @@ void sbc_A_n8(Gameboy *gb, const u8 val) {
 	set_flag(&gb->cpu, N, true);
 	bool c = get_flag(&gb->cpu, C);
 
-	((val + c) & 0x0F) > (gb->cpu.regs[AF].high & 0x0F) ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	val + c > gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, ((val + c) & 0x0F) > (gb->cpu.regs[AF].high & 0x0F));
+	set_flag(&gb->cpu, C, val + c > gb->cpu.regs[AF].high);
 
 	gb->cpu.regs[AF].high -= (val + c);
 	set_flag(&gb->cpu, Z, !gb->cpu.regs[AF].high);
@@ -356,7 +356,7 @@ void sbc_A_n8(Gameboy *gb, const u8 val) {
 
 void dec_r8(Gameboy *gb, u8 *dest) {
 	// lower 4 bits only borrow if they're 0000
-	((*dest)-- & 0x0F) == 0x00 ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
+	set_flag(&gb->cpu, H, ((*dest)-- & 0x0F) == 0x00);
 
 	set_flag(&gb->cpu, Z, !(*dest));
 	set_flag(&gb->cpu, N, true);
@@ -368,7 +368,7 @@ void dec_r8(Gameboy *gb, u8 *dest) {
 void dec_aHL(Gameboy *gb) {
 	u8 result = read8(&gb->memory, gb->cpu.regs[HL].full);
 
-	(result-- & 0x0F) == 0x00 ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
+	set_flag(&gb->cpu, H, (result-- & 0x0F) == 0x00);
 	set_flag(&gb->cpu, Z, !result);
 	set_flag(&gb->cpu, N, true);
 
@@ -379,7 +379,7 @@ void dec_aHL(Gameboy *gb) {
 }
 
 void inc_r8(Gameboy *gb, u8 *dest) {
-	((*dest)++ & 0x0F) == 0x0F ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
+	set_flag(&gb->cpu, H, ((*dest)++ & 0x0F) == 0x0F);
 
 	set_flag(&gb->cpu, Z, !(*dest));
 	set_flag(&gb->cpu, N, false);
@@ -391,7 +391,7 @@ void inc_r8(Gameboy *gb, u8 *dest) {
 void inc_aHL(Gameboy *gb) {
 	u8 result = read8(&gb->memory, gb->cpu.regs[HL].full);
 
-	(result++ & 0x0F) == 0x0F ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
+	set_flag(&gb->cpu, H, (result++ & 0x0F) == 0x0F);
 	set_flag(&gb->cpu, Z, !result);
 	set_flag(&gb->cpu, N, false);
 
@@ -406,8 +406,8 @@ void cp_A_r8(Gameboy *gb, const u8 src) {
 
 	set_flag(&gb->cpu, Z, !result);
 	set_flag(&gb->cpu, N, true);
-	(src & 0x0F) > (gb->cpu.regs[AF].high & 0x0F) ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	src > gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (src & 0x0F) > (gb->cpu.regs[AF].high & 0x0F));
+	set_flag(&gb->cpu, C, src > gb->cpu.regs[AF].high);
 
 	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 1;
@@ -419,8 +419,8 @@ void cp_A_aHL(Gameboy *gb) {
 
 	set_flag(&gb->cpu, Z, !result);
 	set_flag(&gb->cpu, N, true);
-	(val & 0x0F) > (gb->cpu.regs[AF].high & 0x0F) ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	val > gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (val & 0x0F) > (gb->cpu.regs[AF].high & 0x0F));
+	set_flag(&gb->cpu, C, val > gb->cpu.regs[AF].high);
 
 	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
@@ -431,8 +431,8 @@ void cp_A_n8(Gameboy *gb, const u8 val) {
 
 	set_flag(&gb->cpu, Z, !result);
 	set_flag(&gb->cpu, N, true);
-	(val & 0x0F) > (gb->cpu.regs[AF].high & 0x0F) ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	val > gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (val & 0x0F) > (gb->cpu.regs[AF].high & 0x0F));
+	set_flag(&gb->cpu, C, val > gb->cpu.regs[AF].high);
 
 	gb->cpu.regs[PC].full += 2;
 	gb->cpu.cycle += 2;
@@ -1062,7 +1062,7 @@ void reti(Gameboy *gb) {
 void ccf(Gameboy *gb) {
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, false);
-	get_flag(&gb->cpu, C) ? set_flag(&gb->cpu, C, false) : set_flag(&gb->cpu, C, true);
+	set_flag(&gb->cpu, C, !get_flag(&gb->cpu, C));
 
 	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 1;
@@ -1122,8 +1122,8 @@ void ld_addr16_SP(Gameboy *gb, const u16 addr) {
 void ld_HL_SPe8(Gameboy *gb, const i8 val) {
 	set_flag(&gb->cpu, Z, false);
 	set_flag(&gb->cpu, N, false);
-	(gb->cpu.regs[SP].full & 0x000F) + (val & 0x0F) > 0x000F ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	(gb->cpu.regs[SP].full & 0x00FF) + (val & 0xFF) > 0x00FF ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (gb->cpu.regs[SP].full & 0x000F) + (val & 0x0F) > 0x000F);
+	set_flag(&gb->cpu, C, (gb->cpu.regs[SP].full & 0x00FF) + (val & 0xFF) > 0x00FF);
 
 	gb->cpu.regs[HL].full = gb->cpu.regs[SP].full + val;
 
@@ -1141,8 +1141,8 @@ void ld_SP_HL(Gameboy *gb) {
 void add_SP_n8(Gameboy *gb, const i8 val) {
 	set_flag(&gb->cpu, Z, false);
 	set_flag(&gb->cpu, N, false);
-	(gb->cpu.regs[SP].full & 0x000F) + (val & 0x0F) > 0x000F ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	(gb->cpu.regs[SP].full & 0x00FF) + (val & 0xFF) > 0x00FF ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (gb->cpu.regs[SP].full & 0x000F) + (val & 0x0F) > 0x000F);
+	set_flag(&gb->cpu, C, (gb->cpu.regs[SP].full & 0x00FF) + (val & 0xFF) > 0x00FF);
 
 	gb->cpu.regs[SP].full += val;
 
