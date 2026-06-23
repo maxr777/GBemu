@@ -1177,18 +1177,22 @@ void halt(Gameboy *gb) {
 // ================ MISC ================
 
 void daa(Gameboy *gb) {
-	u8 adj = 0;
-	bool sub = get_flag(&gb->cpu, N), hcarry = get_flag(&gb->cpu, H), carry = get_flag(&gb->cpu, C);
+	bool
+	    sub = get_flag(&gb->cpu, N),
+	    hcarry = get_flag(&gb->cpu, H),
+	    carry = get_flag(&gb->cpu, C);
 
+	u8 adj = 0;
 	if (sub) {
 		if (hcarry) adj += 0x06;
 		if (carry) adj += 0x60;
-		adj > gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
 		gb->cpu.regs[AF].high -= adj;
 	} else {
 		if (hcarry || (gb->cpu.regs[AF].high & 0x0F) > 0x09) adj += 0x06;
-		if (carry || gb->cpu.regs[AF].high > 0x99) adj += 0x60;
-		gb->cpu.regs[AF].high + adj < gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+		if (carry || gb->cpu.regs[AF].high > 0x99) {
+			adj += 0x60;
+			set_flag(&gb->cpu, C, true);
+		}
 		gb->cpu.regs[AF].high += adj;
 	}
 
