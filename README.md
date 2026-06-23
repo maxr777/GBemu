@@ -22,6 +22,9 @@ Linux: ```gcc```
 
 Windows: ```mingw``` (basically gcc for windows)  
 
+Note that first build also compiles raylib, so it will be relatively slow.
+Everything after that just reuses ```libraylib.a```.
+
 ## Build
 
 Run ```./run.sh``` on Linux.
