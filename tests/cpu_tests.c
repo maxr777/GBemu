@@ -160,6 +160,9 @@ void test_cpu() {
 			}
 
 			opcode_execute(i, &gb, false);
+			// For CB, if a test fails the name implies which opcode to look for
+			// For example, if "cb 40 22" fails then it means that opcode 0x40
+			// (from the prefixed table) has an bug
 			if (i == 0xCB) {
 				u8 prefixed_opcode = read8(&gb.memory, gb.cpu.regs[PC].full);
 				opcode_execute(prefixed_opcode, &gb, false);

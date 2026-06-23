@@ -594,12 +594,12 @@ void xor_A_n8(Gameboy *gb, const u8 val) {
 // ================ BIT FLAGS ================
 
 void bit_u3_r8(Gameboy *gb, const int bit_num, const u8 src) {
-	src & (1 << bit_num) ? set_flag(&gb->cpu, Z, false) : set_flag(&gb->cpu, Z, true);
+	set_flag(&gb->cpu, Z, !(src & (1 << bit_num)));
 
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, true);
 
-	gb->cpu.regs[PC].full += 1;
+	gb->cpu.regs[PC].full += 2;
 	gb->cpu.cycle += 2;
 }
 
