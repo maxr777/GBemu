@@ -1,3 +1,9 @@
+/*
+ * Since the CPU tests require a simplified memory layout, I have to use
+ * a separate test runner for them, since I just went with a simple #ifdef
+ * for the memory read and write functions.
+ */
+
 #ifdef _WIN32
 #include <windows.h>
 #else
@@ -32,22 +38,24 @@ static u64 now_ns(void) {
 #endif
 }
 
+#define CPU_TEST
+
 // clang-format off
 #include "../platform/desktop.c"
-#include "game_load_test.c"
+#include "../gameboy/memory.c"
+#include "../gameboy/cpu.c"
+#include "../gameboy/gameboy.c"
+#include "../external/cJSON/cJSON.c"
+#include "cpu_tests.c"
 // clang-format on
 
 int main(void) {
 
 	u64 start = now_ns();
-
-	test_game_load();
-	test_game_load_missing();
-	test_game_load_too_small();
-
+	test_cpu();
 	u64 end = now_ns();
 
-	fprintf(stderr, "All game load tests passed in %.3fms\n", (end - start) / 1000000.0);
+	fprintf(stderr, "All CPU tests passed in %.3fms\n", (end - start) / 1000000.0);
 
 	return 0;
 }

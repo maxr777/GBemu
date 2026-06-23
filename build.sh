@@ -42,4 +42,5 @@ gcc -o GBemu platform/desktop_gbemu.c -s -O2 \
     -lGL -lm -lpthread -ldl -lrt -lX11 \
     -std=c11 -Wall
 
+gcc -o tests/cpu_test_runner tests/cpu_test_runner.c -std=c11 -Wall
 gcc -o tests/test_runner tests/test_runner.c -std=c11 -Wall

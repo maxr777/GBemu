@@ -20,6 +20,9 @@ jobs:
       - name: Build
         run: ./build.sh
 
+      - name: Run CPU tests
+        run: ./tests/cpu_test_runner
+
       - name: Run tests
         run: ./tests/test_runner
 
@@ -41,6 +44,12 @@ jobs:
         run: |
           set PATH=C:\msys64\mingw64\bin;%PATH%
           build.bat
+
+      - name: Run CPU tests
+        shell: cmd
+        run: |
+          set PATH=C:\msys64\mingw64\bin;%PATH%
+          tests\cpu_test_runner.exe
 
       - name: Run tests
         shell: cmd

@@ -8,6 +8,7 @@
 *.dll
 GBemu
 tests/test_runner
+tests/cpu_test_runner
 *.jpg
 *.png
 external/raylib/st*

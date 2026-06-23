@@ -46,5 +46,8 @@ gcc -o GBemu.exe platform\desktop_gbemu.c -s -O2 ^
     -std=c11 -Wall
 if errorlevel 1 exit /b %errorlevel%
 
+gcc -o tests\cpu_test_runner.exe tests\cpu_test_runner.c -std=c11 -Wall
+if errorlevel 1 exit /b %errorlevel%
+
 gcc -o tests\test_runner.exe tests\test_runner.c -std=c11 -Wall
 if errorlevel 1 exit /b %errorlevel%
