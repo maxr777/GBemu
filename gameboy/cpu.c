@@ -207,8 +207,8 @@ void add_A_aHL(Gameboy *gb) {
 	u8 val = read8(&gb->memory, gb->cpu.regs[HL].full);
 
 	set_flag(&gb->cpu, N, false);
-	(gb->cpu.regs[AF].high & 0x0F) + (val & 0x0F) > 0x0F ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	(gb->cpu.regs[AF].high + val) > gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (gb->cpu.regs[AF].high & 0x0F) + (val & 0x0F) > 0x0F);
+	set_flag(&gb->cpu, C, (gb->cpu.regs[AF].high + val) > 0xFF);
 
 	gb->cpu.regs[AF].high += val;
 	set_flag(&gb->cpu, Z, !gb->cpu.regs[AF].high);
@@ -443,9 +443,7 @@ void cp_A_n8(Gameboy *gb, const u8 val) {
 void add_HL_r16(Gameboy *gb, const u16 src) {
 	set_flag(&gb->cpu, N, false);
 
-	u16 result = gb->cpu.regs[HL].full + src;
-	bool carry = result < gb->cpu.regs[HL].full;
-	set_flag(&gb->cpu, C, carry);
+	set_flag(&gb->cpu, C, gb->cpu.regs[HL].full + src > 0xFFFF);
 
 	bool half_carry = (gb->cpu.regs[HL].full & 0x0FFF) + (src & 0x0FFF) > 0x0FFF;
 	set_flag(&gb->cpu, H, half_carry);
