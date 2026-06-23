@@ -330,8 +330,8 @@ void sbc_A_aHL(Gameboy *gb) {
 	bool c = get_flag(&gb->cpu, C);
 	u8 val = read8(&gb->memory, gb->cpu.regs[HL].full);
 
-	((val + c) & 0x0F) > (gb->cpu.regs[AF].high & 0x0F) ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	val + c > gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (gb->cpu.regs[AF].high & 0x0F) < ((val & 0x0F) + c));
+	set_flag(&gb->cpu, C, val + c > gb->cpu.regs[AF].high);
 
 	gb->cpu.regs[AF].high -= (val + c);
 	set_flag(&gb->cpu, Z, !gb->cpu.regs[AF].high);
