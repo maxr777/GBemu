@@ -315,8 +315,8 @@ void sbc_A_r8(Gameboy *gb, const u8 src) {
 	set_flag(&gb->cpu, N, true);
 	bool c = get_flag(&gb->cpu, C);
 
-	((src + c) & 0x0F) > (gb->cpu.regs[AF].high & 0x0F) ? set_flag(&gb->cpu, H, true) : set_flag(&gb->cpu, H, false);
-	src + c > gb->cpu.regs[AF].high ? set_flag(&gb->cpu, C, true) : set_flag(&gb->cpu, C, false);
+	set_flag(&gb->cpu, H, (gb->cpu.regs[AF].high & 0x0F) < ((src & 0x0F) + c));
+	set_flag(&gb->cpu, C, (src + c) > gb->cpu.regs[AF].high);
 
 	gb->cpu.regs[AF].high -= (src + c);
 	set_flag(&gb->cpu, Z, !gb->cpu.regs[AF].high);
