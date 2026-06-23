@@ -35,6 +35,27 @@ void test_cpu() {
 	Gameboy gb = {};
 
 	for (int i = 0x00; i <= 0xFF; ++i) {
+
+		// No tests for those
+		switch (i) {
+		case 0x10: // STOP
+		case 0x76: // HALT
+		case 0xD3: // ILLEGAL
+		case 0xDB: // ILLEGAL
+		case 0xDD: // ILLEGAL
+		case 0xE3: // ILLEGAL
+		case 0xE4: // ILLEGAL
+		case 0xEB: // ILLEGAL
+		case 0xEC: // ILLEGAL
+		case 0xED: // ILLEGAL
+		case 0xF3: // DI
+		case 0xF4: // ILLEGAL
+		case 0xFB: // EI
+		case 0xFC: // ILLEGAL
+		case 0xFD: // ILLEGAL
+			continue;
+		}
+
 		printf("Test: Opcode %02X\n", i);
 		fflush(stdout);
 
