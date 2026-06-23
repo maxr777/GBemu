@@ -604,12 +604,12 @@ void bit_u3_r8(Gameboy *gb, const int bit_num, const u8 src) {
 }
 
 void bit_u3_aHL(Gameboy *gb, const int bit_num) {
-	read8(&gb->memory, gb->cpu.regs[HL].full) & (1 << bit_num) ? set_flag(&gb->cpu, Z, false) : set_flag(&gb->cpu, Z, true);
+	set_flag(&gb->cpu, Z, !(read8(&gb->memory, gb->cpu.regs[HL].full) & (1 << bit_num)));
 
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, true);
 
-	gb->cpu.regs[PC].full += 1;
+	gb->cpu.regs[PC].full += 2;
 	gb->cpu.cycle += 2;
 }
 
