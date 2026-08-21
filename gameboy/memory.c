@@ -135,7 +135,6 @@ read8(const Gameboy *gb, const u16 addr) {
 	} else if (addr < INVAL_MEM_ADDR)
 		return gb->memory.oam[addr - OAM_ADDR];
 	else if (addr < IO_REGS_ADDR) {
-		platform_error_log("read8: use of 0xFEA0-0xFEFF is prohibited\n");
 		return 0;
 	} else if (addr < HRAM_ADDR) {
 		// https://github.com/Gekkio/mooneye-test-suite?tab=readme-ov-file#passfail-reporting
