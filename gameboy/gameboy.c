@@ -27,7 +27,8 @@ static u8 BOOT_ROM[] = {
     0x4d, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x3e, 0x01, 0xe0, 0x50};
 
-Gameboy gameboy_initialize(const char *filepath) {
+Gameboy
+gameboy_initialize(const char *filepath) {
 	Gameboy gb = {};
 
 	platform_game_load(filepath, &gb.rom);
@@ -38,7 +39,8 @@ Gameboy gameboy_initialize(const char *filepath) {
 	return gb;
 }
 
-void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
+void
+opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 	if (gb->cpu.prefix) {
 		// ==================== PREFIX ====================
 		switch (opcode) {
@@ -1083,7 +1085,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x01: {
 			if (debug) platform_instruction_log(gb, opcode, "LD BC, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_r16_n16(gb, &gb->cpu.regs[BC].full, n16);
 		} break;
 		case 0x02:
@@ -1104,7 +1106,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x06: {
 			if (debug) platform_instruction_log(gb, opcode, "LD B, n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[BC].high, n8);
 		} break;
 		case 0x07:
@@ -1113,7 +1115,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x08: {
 			if (debug) platform_instruction_log(gb, opcode, "LD [n16], SP");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_addr16_SP(gb, n16);
 		} break;
 		case 0x09:
@@ -1138,7 +1140,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x0E: {
 			if (debug) platform_instruction_log(gb, opcode, "LD C, n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[BC].low, n8);
 		} break;
 		case 0x0F:
@@ -1147,12 +1149,12 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x10: {
 			if (debug) platform_instruction_log(gb, opcode, "STOP n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			stop_n8(gb, n8);
 		} break;
 		case 0x11: {
 			if (debug) platform_instruction_log(gb, opcode, "LD DE, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_r16_n16(gb, &gb->cpu.regs[DE].full, n16);
 		} break;
 		case 0x12:
@@ -1173,7 +1175,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x16: {
 			if (debug) platform_instruction_log(gb, opcode, "LD D, n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[DE].high, n8);
 		} break;
 		case 0x17:
@@ -1182,7 +1184,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x18: {
 			if (debug) platform_instruction_log(gb, opcode, "JR n16");
-			i8 offset = (i8)read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			i8 offset = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
 			jr_n16(gb, offset);
 			break;
 		}
@@ -1208,7 +1210,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x1E: {
 			if (debug) platform_instruction_log(gb, opcode, "LD E, n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[DE].low, n8);
 		} break;
 		case 0x1F:
@@ -1217,13 +1219,13 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x20: {
 			if (debug) platform_instruction_log(gb, opcode, "JR NZ, n16");
-			i8 offset = (i8)read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			i8 offset = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
 			jr_cc_n16(gb, Z, false, offset);
 			break;
 		}
 		case 0x21: {
 			if (debug) platform_instruction_log(gb, opcode, "LD HL, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_r16_n16(gb, &gb->cpu.regs[HL].full, n16);
 		} break;
 		case 0x22:
@@ -1244,7 +1246,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x26: {
 			if (debug) platform_instruction_log(gb, opcode, "LD H, n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[HL].high, n8);
 		} break;
 		case 0x27:
@@ -1253,7 +1255,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x28: {
 			if (debug) platform_instruction_log(gb, opcode, "JR Z, n16");
-			i8 offset = (i8)read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			i8 offset = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
 			jr_cc_n16(gb, Z, true, offset);
 			break;
 		}
@@ -1279,7 +1281,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x2E: {
 			if (debug) platform_instruction_log(gb, opcode, "LD L, n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[HL].low, n8);
 		} break;
 		case 0x2F:
@@ -1288,13 +1290,13 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x30: {
 			if (debug) platform_instruction_log(gb, opcode, "JR NC, n16");
-			i8 offset = (i8)read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			i8 offset = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
 			jr_cc_n16(gb, C, false, offset);
 			break;
 		}
 		case 0x31: {
 			if (debug) platform_instruction_log(gb, opcode, "LD SP, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_r16_n16(gb, &gb->cpu.regs[SP].full, n16);
 		} break;
 		case 0x32:
@@ -1315,7 +1317,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x36: {
 			if (debug) platform_instruction_log(gb, opcode, "LD [HL], n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_aHL_n8(gb, n8);
 		} break;
 		case 0x37:
@@ -1324,7 +1326,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x38: {
 			if (debug) platform_instruction_log(gb, opcode, "JR C, n16");
-			i8 offset = (i8)read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			i8 offset = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
 			jr_cc_n16(gb, C, true, offset);
 			break;
 		}
@@ -1350,7 +1352,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0x3E: {
 			if (debug) platform_instruction_log(gb, opcode, "LD A, n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[AF].high, n8);
 		} break;
 		case 0x3F:
@@ -1879,19 +1881,19 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xC2: {
 			if (debug) platform_instruction_log(gb, opcode, "JP NZ, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			jp_cc_n16(gb, Z, false, n16);
 			break;
 		}
 		case 0xC3: {
 			if (debug) platform_instruction_log(gb, opcode, "JP n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			jp_n16(gb, n16);
 			break;
 		}
 		case 0xC4: {
 			if (debug) platform_instruction_log(gb, opcode, "CALL NZ, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			call_cc_n16(gb, Z, false, n16);
 			break;
 		}
@@ -1901,7 +1903,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xC6: {
 			if (debug) platform_instruction_log(gb, opcode, "ADD A, n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			add_A_n8(gb, n8);
 			break;
 		}
@@ -1919,7 +1921,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xCA: {
 			if (debug) platform_instruction_log(gb, opcode, "JP Z, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			jp_cc_n16(gb, Z, true, n16);
 			break;
 		}
@@ -1930,19 +1932,19 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xCC: {
 			if (debug) platform_instruction_log(gb, opcode, "CALL Z, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			call_cc_n16(gb, Z, true, n16);
 			break;
 		}
 		case 0xCD: {
 			if (debug) platform_instruction_log(gb, opcode, "CALL n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			call_n16(gb, n16);
 			break;
 		}
 		case 0xCE: {
 			if (debug) platform_instruction_log(gb, opcode, "ADC A, n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			adc_A_n8(gb, n8);
 			break;
 		}
@@ -1960,13 +1962,13 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xD2: {
 			if (debug) platform_instruction_log(gb, opcode, "JP NC, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			jp_cc_n16(gb, C, false, n16);
 			break;
 		}
 		case 0xD4: {
 			if (debug) platform_instruction_log(gb, opcode, "CALL NC, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			call_cc_n16(gb, C, false, n16);
 			break;
 		}
@@ -1976,7 +1978,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xD6: {
 			if (debug) platform_instruction_log(gb, opcode, "SUB A, n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			sub_A_n8(gb, n8);
 			break;
 		}
@@ -1994,19 +1996,19 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xDA: {
 			if (debug) platform_instruction_log(gb, opcode, "JP C, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			jp_cc_n16(gb, C, true, n16);
 			break;
 		}
 		case 0xDC: {
 			if (debug) platform_instruction_log(gb, opcode, "CALL C, n16");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			call_cc_n16(gb, C, true, n16);
 			break;
 		}
 		case 0xDE: {
 			if (debug) platform_instruction_log(gb, opcode, "SBC A, n8");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			sbc_A_n8(gb, n8);
 			break;
 		}
@@ -2016,7 +2018,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xE0: {
 			if (debug) platform_instruction_log(gb, opcode, "LDH [n16], A");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			ldh_addr16_A(gb, 0xFF00 + n8);
 			break;
 		}
@@ -2034,7 +2036,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xE6: {
 			if (debug) platform_instruction_log(gb, opcode, "AND A, n8");
-			i8 n8 = (i8)read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
 			and_A_n8(gb, n8);
 		} break;
 		case 0xE7:
@@ -2043,7 +2045,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xE8: {
 			if (debug) platform_instruction_log(gb, opcode, "ADD SP, n8");
-			i8 n8 = (i8)read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
 			add_SP_n8(gb, n8);
 		} break;
 		case 0xE9:
@@ -2052,13 +2054,13 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xEA: {
 			if (debug) platform_instruction_log(gb, opcode, "LD [n16], A");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_addr16_A(gb, n16);
 			break;
 		}
 		case 0xEE: {
 			if (debug) platform_instruction_log(gb, opcode, "XOR A, n8");
-			i8 n8 = (i8)read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
 			xor_A_n8(gb, n8);
 		} break;
 		case 0xEF:
@@ -2067,7 +2069,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xF0: {
 			if (debug) platform_instruction_log(gb, opcode, "LDH A, [n16]");
-			u8 n8 = read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
 			ldh_A_addr16(gb, 0xFF00 + n8);
 			break;
 		}
@@ -2089,7 +2091,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xF6: {
 			if (debug) platform_instruction_log(gb, opcode, "OR A, n8");
-			i8 n8 = (i8)read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
 			or_A_n8(gb, n8);
 		} break;
 		case 0xF7:
@@ -2098,7 +2100,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xF8: {
 			if (debug) platform_instruction_log(gb, opcode, "LD HL, SP+n8");
-			i8 n8 = (i8)read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_HL_SPe8(gb, n8);
 		} break;
 		case 0xF9:
@@ -2107,7 +2109,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xFA: {
 			if (debug) platform_instruction_log(gb, opcode, "LD A, [n16]");
-			u16 n16 = read16(&gb->memory, gb->cpu.regs[PC].full + 1);
+			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_A_addr16(gb, n16);
 			break;
 		}
@@ -2117,7 +2119,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			break;
 		case 0xFE: {
 			if (debug) platform_instruction_log(gb, opcode, "CP A, n8");
-			i8 n8 = (i8)read8(&gb->memory, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
 			cp_A_n8(gb, n8);
 		} break;
 		case 0xFF:

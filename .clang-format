@@ -4,3 +4,4 @@ AlignConsecutiveMacros: true
 UseTab: Always
 TabWidth: 8
 IndentWidth: 8
+BreakAfterReturnType: All

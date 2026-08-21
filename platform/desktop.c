@@ -1,15 +1,18 @@
 #include "../gameboy/gameboy.h"
-// This is for %" PRIu64 ", as u64 is %llu on Windows and %lu on Linux
+#include <assert.h>
+// inttypes.h is for %" PRIu64 ", as u64 is %llu on Windows and %lu on Linux
 #include <inttypes.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
-void platform_error_log(const char *msg) {
+void
+platform_error_log(const char *msg) {
 	fprintf(stderr, "%s", msg);
 }
 
-void platform_instruction_log(Gameboy *gb, const u8 opcode, const char *instr) {
+void
+platform_instruction_log(Gameboy *gb, const u8 opcode, const char *instr) {
 	printf("Cycle: %" PRIu64 "\tPC: 0x%04X\tOpcode: 0x%02X\t%-12s\tAF: %04X\t\tBC: %04X\tDE: %04X\tHL: %04X\tSP: %04X\tFlags: %c%c%c%c\n",
 	       gb->cpu.cycle, gb->cpu.regs[PC].full, opcode, instr,
 	       gb->cpu.regs[AF].full, gb->cpu.regs[BC].full, gb->cpu.regs[DE].full, gb->cpu.regs[HL].full, gb->cpu.regs[SP].full,
@@ -19,7 +22,45 @@ void platform_instruction_log(Gameboy *gb, const u8 opcode, const char *instr) {
 	       (gb->cpu.regs[AF].low & 0x10) ? 'C' : '-');
 }
 
-void platform_game_load(const char *filepath, ROM *rom) {
+bool
+cartridge_type_is_correct(const u8 type) {
+	switch (type) {
+	case 0x00:
+	case 0x01:
+	case 0x02:
+	case 0x03:
+	case 0x05:
+	case 0x06:
+	case 0x08:
+	case 0x09:
+	case 0x0B:
+	case 0x0C:
+	case 0x0D:
+	case 0x0F:
+	case 0x10:
+	case 0x11:
+	case 0x12:
+	case 0x13:
+	case 0x19:
+	case 0x1A:
+	case 0x1B:
+	case 0x1C:
+	case 0x1D:
+	case 0x1E:
+	case 0x20:
+	case 0x22:
+	case 0xFC:
+	case 0xFD:
+	case 0xFE:
+	case 0xFF:
+		return true;
+	default:
+		return false;
+	}
+}
+
+void
+platform_game_load(const char *filepath, ROM *rom) {
 	memset(rom, 0, sizeof(*rom));
 
 	FILE *game_file = fopen(filepath, "rb");
@@ -68,6 +109,7 @@ void platform_game_load(const char *filepath, ROM *rom) {
 	memcpy(&rom->cartridge_header.new_license_code, &rom->game_rom[0x0144], sizeof(rom->cartridge_header.new_license_code));
 	memcpy(&rom->cartridge_header.sgb_flag, &rom->game_rom[0x0146], sizeof(rom->cartridge_header.sgb_flag));
 	memcpy(&rom->cartridge_header.cartridge_type, &rom->game_rom[0x0147], sizeof(rom->cartridge_header.cartridge_type));
+	assert(cartridge_type_is_correct(rom->cartridge_header.cartridge_type));
 	memcpy(&rom->cartridge_header.rom_size, &rom->game_rom[0x0148], sizeof(rom->cartridge_header.rom_size));
 	memcpy(&rom->cartridge_header.ram_size, &rom->game_rom[0x0149], sizeof(rom->cartridge_header.ram_size));
 	memcpy(&rom->cartridge_header.destination_code, &rom->game_rom[0x014A], sizeof(rom->cartridge_header.destination_code));

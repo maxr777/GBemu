@@ -17,7 +17,8 @@
 
 bool debug = true;
 
-int main(int argc, char *argv[]) {
+int
+main(int argc, char *argv[]) {
 	// if (argc < 2) {
 	// 	fprintf(stderr, "No game loaded\n");
 	// 	return 1;

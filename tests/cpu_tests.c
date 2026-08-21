@@ -177,7 +177,7 @@ void test_cpu() {
 			for (int k = 0; k < test_initial.mem_size; ++k) {
 				// test_mem[test_initial.mem_addr[k]] =
 				//     test_initial.mem_val[k];
-				write8(&gb.memory, test_initial.mem_addr[k], test_initial.mem_val[k]);
+				write8(&gb, test_initial.mem_addr[k], test_initial.mem_val[k]);
 			}
 
 			opcode_execute(i, &gb, false);
@@ -185,7 +185,7 @@ void test_cpu() {
 			// For example, if "cb 40 22" fails then it means that opcode 0x40
 			// (from the prefixed table) has an bug
 			if (i == 0xCB) {
-				u8 prefixed_opcode = read8(&gb.memory, gb.cpu.regs[PC].full);
+				u8 prefixed_opcode = read8(&gb, gb.cpu.regs[PC].full);
 				opcode_execute(prefixed_opcode, &gb, false);
 			}
 
@@ -267,7 +267,7 @@ void test_cpu() {
 			for (int k = 0; k < test_expected.mem_size; ++k) {
 				// if (test_mem[test_expected.mem_addr[k]] !=
 				//     test_expected.mem_val[k]) pass = false;
-				if (read8(&gb.memory, test_expected.mem_addr[k]) !=
+				if (read8(&gb, test_expected.mem_addr[k]) !=
 				    test_expected.mem_val[k]) pass = false;
 			}
 
@@ -294,7 +294,7 @@ void test_cpu() {
 				for (int k = 0; k < temp.mem_size; ++k) {
 					temp.mem_addr[k] = test_expected.mem_addr[k];
 					// temp.mem_val[k] = test_mem[temp.mem_addr[k]];
-					temp.mem_val[k] = read8(&gb.memory, temp.mem_addr[k]);
+					temp.mem_val[k] = read8(&gb, temp.mem_addr[k]);
 				}
 
 				printf("CURRENT VALUES:\n");

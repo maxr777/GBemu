@@ -34,7 +34,9 @@ static u64 now_ns(void) {
 
 // clang-format off
 #include "../platform/desktop.c"
+#include "../gameboy/memory.c"
 #include "game_load_test.c"
+#include "memory_map_test.c"
 // clang-format on
 
 int main(void) {
@@ -44,6 +46,7 @@ int main(void) {
 	test_game_load();
 	test_game_load_missing();
 	test_game_load_too_small();
+	test_memory_read();
 
 	u64 end = now_ns();
 
