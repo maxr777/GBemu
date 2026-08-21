@@ -131,8 +131,7 @@ read8(const Gameboy *gb, const u16 addr) {
 	else if (addr < ECHO_RAM_ADDR)
 		return gb->memory.ram[addr - WRAM_0_ADDR];
 	else if (addr < OAM_ADDR) {
-		platform_error_log("read8: use of echo ram is prohibited\n");
-		return 0;
+		return gb->memory.ram[addr - ECHO_RAM_ADDR];
 	} else if (addr < INVAL_MEM_ADDR)
 		return gb->memory.oam[addr - OAM_ADDR];
 	else if (addr < IO_REGS_ADDR) {
