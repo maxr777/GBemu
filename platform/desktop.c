@@ -6,13 +6,15 @@
 #include <stdlib.h>
 #include <string.h>
 
-void
-platform_error_log(const char *msg) {
+void platform_serial_print(const char ch) {
+	printf("%c", ch);
+}
+
+void platform_error_log(const char *msg) {
 	fprintf(stderr, "%s", msg);
 }
 
-void
-platform_instruction_log(Gameboy *gb, const u8 opcode, const char *instr) {
+void platform_instruction_log(Gameboy *gb, const u8 opcode, const char *instr) {
 	printf("Cycle: %" PRIu64 "\tPC: 0x%04X\tOpcode: 0x%02X\t%-12s\tAF: %04X\t\tBC: %04X\tDE: %04X\tHL: %04X\tSP: %04X\tFlags: %c%c%c%c\n",
 	       gb->cpu.cycle, gb->cpu.regs[PC].full, opcode, instr,
 	       gb->cpu.regs[AF].full, gb->cpu.regs[BC].full, gb->cpu.regs[DE].full, gb->cpu.regs[HL].full, gb->cpu.regs[SP].full,
@@ -22,8 +24,7 @@ platform_instruction_log(Gameboy *gb, const u8 opcode, const char *instr) {
 	       (gb->cpu.regs[AF].low & 0x10) ? 'C' : '-');
 }
 
-bool
-cartridge_type_is_correct(const u8 type) {
+bool cartridge_type_is_correct(const u8 type) {
 	switch (type) {
 	case 0x00:
 	case 0x01:
@@ -59,8 +60,7 @@ cartridge_type_is_correct(const u8 type) {
 	}
 }
 
-void
-platform_game_load(const char *filepath, ROM *rom) {
+void platform_game_load(const char *filepath, ROM *rom) {
 	memset(rom, 0, sizeof(*rom));
 
 	FILE *game_file = fopen(filepath, "rb");

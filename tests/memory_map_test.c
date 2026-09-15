@@ -11,8 +11,7 @@
 #define IO_FILL	  0x55
 #define HRAM_FILL 0x66
 
-static void
-test_memory_read(void) {
+void test_memory_read(void) {
 	puts("Test: Memory map reads");
 	fflush(stdout);
 
@@ -129,4 +128,104 @@ test_memory_read(void) {
 	assert(read16(&gb, HRAM_ADDR) == (u16)(0xA0 | (HRAM_FILL << 8)));
 
 	free(gb.rom.game_rom);
+}
+
+void test_memory_write(void) {
+	puts("Test: Memory map writes");
+	fflush(stdout);
+
+	Gameboy gb = {};
+
+	// Enable MBC1 external RAM in bank 0 for ordinary data writes.
+	gb.rom.cartridge_header.cartridge_type = 0x02;
+	write8(&gb, ROM_BANK_0_ADDR, 0x0A);
+	assert(gb.mbc1.ram_enable);
+
+	write8(&gb, VRAM_ADDR + 0x1000, VRAM_FILL);
+	write8(&gb, EXTERN_RAM_ADDR + 0x0100, RAM_FILL);
+	write8(&gb, WRAM_0_ADDR + 0x0100, RAM_FILL);
+	write8(&gb, WRAM_N_ADDR + 0x00C0, RAM_FILL);
+	write8(&gb, OAM_ADDR + 0x0001, OAM_FILL);
+	write8(&gb, IO_REGS_ADDR + 0x000A, IO_FILL);
+	write8(&gb, HRAM_ADDR + 0x0008, HRAM_FILL);
+
+	// Distinct edge markers so an off-by-one into the next region fails.
+	write8(&gb, VRAM_ADDR, 0xC0);
+	write8(&gb, EXTERN_RAM_ADDR - 1, 0xC1);
+	write8(&gb, EXTERN_RAM_ADDR, 0xB0);
+	write8(&gb, WRAM_0_ADDR - 1, 0xB1);
+	write8(&gb, WRAM_0_ADDR, 0xD0);
+	write8(&gb, WRAM_N_ADDR - 1, 0xD1);
+	write8(&gb, WRAM_N_ADDR, 0xD2);
+	write8(&gb, WRAM_0_ADDR + (OAM_ADDR - ECHO_RAM_ADDR - 1), 0xD3);
+	write8(&gb, ECHO_RAM_ADDR - 1, 0xD4);
+	write8(&gb, OAM_ADDR, 0xE0);
+	write8(&gb, INVAL_MEM_ADDR - 1, 0xE1);
+	write8(&gb, IO_REGS_ADDR, 0xF0);
+	write8(&gb, HRAM_ADDR - 1, 0xF1);
+	write8(&gb, HRAM_ADDR, 0xA0);
+	write8(&gb, INT_ENABLE_ADDR - 1, 0xA1);
+
+	// Check backing storage directly to verify the write address mapping.
+	// VRAM
+	assert(gb.memory.vram[0] == 0xC0);
+	assert(gb.memory.vram[VRAM_SIZE - 1] == 0xC1);
+	assert(gb.memory.vram[0x1000] == VRAM_FILL);
+
+	// External RAM
+	assert(gb.rom.external_ram[0] == 0xB0);
+	assert(gb.rom.external_ram[EXTERN_RAM_SIZE - 1] == 0xB1);
+	assert(gb.rom.external_ram[0x0100] == RAM_FILL);
+
+	// WRAM 0 / WRAM N
+	assert(gb.memory.ram[0] == 0xD0);
+	assert(gb.memory.ram[WRAM_SIZE - 1] == 0xD1);
+	assert(gb.memory.ram[WRAM_SIZE] == 0xD2);
+	assert(gb.memory.ram[OAM_ADDR - ECHO_RAM_ADDR - 1] == 0xD3);
+	assert(gb.memory.ram[sizeof(gb.memory.ram) - 1] == 0xD4);
+	assert(gb.memory.ram[0x0100] == RAM_FILL);
+	assert(gb.memory.ram[WRAM_SIZE + 0x00C0] == RAM_FILL);
+
+	// Echo RAM reflects WRAM writes; direct echo writes currently assert.
+	assert(read8(&gb, ECHO_RAM_ADDR) == 0xD0);
+	assert(read8(&gb, ECHO_RAM_ADDR + 0x0FFF) == 0xD1);
+	assert(read8(&gb, ECHO_RAM_ADDR + 0x1000) == 0xD2);
+	assert(read8(&gb, OAM_ADDR - 1) == 0xD3);
+	assert(read8(&gb, ECHO_RAM_ADDR + 0x0100) == RAM_FILL);
+	assert(read8(&gb, ECHO_RAM_ADDR + 0x10C0) == RAM_FILL);
+
+	// OAM
+	assert(gb.memory.oam[0] == 0xE0);
+	assert(gb.memory.oam[sizeof(gb.memory.oam) - 1] == 0xE1);
+	assert(gb.memory.oam[0x0001] == OAM_FILL);
+
+	// Ordinary I/O registers, avoiding special register side effects.
+	assert(gb.memory.io_registers[0] == 0xF0);
+	assert(gb.memory.io_registers[sizeof(gb.memory.io_registers) - 1] == 0xF1);
+	assert(gb.memory.io_registers[0x000A] == IO_FILL);
+
+	// HRAM
+	assert(gb.memory.hram[0] == 0xA0);
+	assert(gb.memory.hram[sizeof(gb.memory.hram) - 1] == 0xA1);
+	assert(gb.memory.hram[0x0008] == HRAM_FILL);
+
+	// ROM is controller space; unused memory and IE writes currently assert.
+
+	// 16-bit writes store the low byte first, including across region edges.
+	write16(&gb, WRAM_0_ADDR + 0x0100, 0x1234);
+	assert(gb.memory.ram[0x0100] == 0x34);
+	assert(gb.memory.ram[0x0101] == 0x12);
+	assert(read16(&gb, ECHO_RAM_ADDR + 0x0100) == 0x1234);
+
+	write16(&gb, WRAM_N_ADDR - 1, 0x5678);
+	assert(gb.memory.ram[WRAM_SIZE - 1] == 0x78);
+	assert(gb.memory.ram[WRAM_SIZE] == 0x56);
+
+	write16(&gb, HRAM_ADDR - 1, 0x9ABC);
+	assert(gb.memory.io_registers[sizeof(gb.memory.io_registers) - 1] == 0xBC);
+	assert(gb.memory.hram[0] == 0x9A);
+
+	write16(&gb, INT_ENABLE_ADDR - 2, 0xDEF0);
+	assert(gb.memory.hram[sizeof(gb.memory.hram) - 2] == 0xF0);
+	assert(gb.memory.hram[sizeof(gb.memory.hram) - 1] == 0xDE);
 }

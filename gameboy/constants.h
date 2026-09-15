@@ -109,4 +109,12 @@
 // wram bank select
 #define WRAM_BANK 0xFF70
 
+// ================ TIMER FREQ CONSTANTS ================
+
+#define CYCLES_PER_DIV CPU_FREQ / 16384
+#define TAC_00_CYCLES  CPU_FREQ / 4096
+#define TAC_01_CYCLES  CPU_FREQ / 262144
+#define TAC_10_CYCLES  CPU_FREQ / 65536
+#define TAC_11_CYCLES  CPU_FREQ / 16384
+
 #endif

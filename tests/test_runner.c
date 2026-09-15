@@ -47,6 +47,7 @@ int main(void) {
 	test_game_load_missing();
 	test_game_load_too_small();
 	test_memory_read();
+	test_memory_write();
 
 	u64 end = now_ns();
 

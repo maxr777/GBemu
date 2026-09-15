@@ -8,74 +8,112 @@
  * implementing mbc1_write()
  */
 
-void
-write16(Gameboy *gb, const u16 addr, const u16 val) {
+void write16(Gameboy *gb, const u16 addr, const u16 val) {
 	write8(gb, addr, val);
 	write8(gb, addr + 1, val >> 8);
 }
 
-u16
-read16(const Gameboy *gb, const u16 addr) {
+u16 read16(const Gameboy *gb, const u16 addr) {
 	return read8(gb, addr) | (read8(gb, addr + 1) << 8);
 }
 
-void
-write8(Gameboy *gb, const u16 addr, const u8 val) {
+// addresses: https://gbdev.io/pandocs/MBC1.html
+void mbc1_write(Gameboy *gb, const u16 addr, const u8 val) {
+	if (addr < 0x2000) { // RAM enable
+		if ((val & 0x0F) == 0x0A)
+			gb->mbc1.ram_enable = true;
+		else
+			gb->mbc1.ram_enable = false;
+	} else if (addr < 0x4000) { // ROM bank number
+		gb->mbc1.first_rom_bank_reg = val & 0x1F;
+		gb->rom.current_rom_bank = (gb->mbc1.second_rom_bank_reg << 5) + gb->mbc1.first_rom_bank_reg;
+		gb->rom.current_rom_bank &= gb->rom.max_rom_banks - 1;
+		if (gb->rom.current_rom_bank == 0) gb->rom.current_rom_bank = 1;
+	} else if (addr < 0x6000) { // RAM bank number/upper bits of ROM bank number
+		gb->mbc1.second_rom_bank_reg = val & 0x03;
+		gb->rom.current_rom_bank = (gb->mbc1.second_rom_bank_reg << 5) + gb->mbc1.first_rom_bank_reg;
+		gb->rom.current_rom_bank &= gb->rom.max_rom_banks - 1;
+		if (gb->rom.current_rom_bank == 0) gb->rom.current_rom_bank = 1;
+		if (gb->mbc1.banking_mode_is_advanced) gb->rom.current_ram_bank = val & 0x03;
+	} else if (addr < 0x8000) { // banking mode select
+		gb->mbc1.banking_mode_is_advanced = val & 0x01;
+	} else { // ofc vram is in between extern ram and rom banks, but that gets distinguished in write8
+		if (gb->mbc1.ram_enable)
+			gb->rom.external_ram[(addr - EXTERN_RAM_ADDR) + (gb->rom.current_ram_bank * EXTERN_RAM_SIZE)] = val;
+	}
+}
+
+void rom_write(Gameboy *gb, const u16 addr, const u8 val) {
+	switch (gb->rom.cartridge_header.cartridge_type) {
+	case 0x00:
+		assert(!"Writing to ROM with MCB0 is prohibited\n");
+		break;
+	case 0x01:
+	case 0x02:
+	case 0x03:
+		mbc1_write(gb, addr, val);
+		break;
+	default:
+		assert(!"rom_write(): Unimplemented MCB\n");
+		break;
+	}
+}
+
+void write8(Gameboy *gb, const u16 addr, const u8 val) {
 #ifdef CPU_TEST
 	gb->memory.test_memory[addr] = val;
 #else
-	// if (addr < ROM_BANK_N_ADDR)
-	// 	rom_write(addr, val);
-	// else if (addr < VRAM_ADDR)
-	// 	rom_write(addr, val);
-	// else if (addr < EXTERN_RAM_ADDR)
-	// 	vram[addr - VRAM_ADDR] = val;
-	// else if (addr < WRAM_0_ADDR)
-	// 	rom_write(addr, val);
-	// else if (addr < WRAM_N_ADDR)
-	// 	;
-	// else if (addr < ECHO_RAM_ADDR)
-	// 	ram[addr - WRAM_0_ADDR] = val;
-	// else if (addr < OAM_ADDR)
-	// 	fprintf(stderr, "write8: use of echo ram is prohibited\n");
-	// else if (addr < INVAL_MEM_ADDR)
-	// 	oam[addr - OAM_ADDR] = val;
-	// else if (addr < IO_REGS_ADDR)
-	// 	fprintf(stderr, "write8: use of 0xFEA0-0xFEFF is prohibited\n");
-	// else if (addr < HRAM_ADDR) {
-	// 	io_registers[addr - IO_REGS_ADDR] = val;
-	// 	if (addr == SERIAL_TRANSFER)
-	// 		printf("%c", val);
-	// 	else if (addr == DIV_ADDR) {
-	// 		io_registers[addr - IO_REGS_ADDR] = 0;
-	// 		timer_controls.div_cycle_counter = 0;
-	// 	} else if (addr == TAC_ADDR) {
-	// 		timer_controls.tac_enable = val & 0x04;
-	// 		switch (val & 0x03) {
-	// 		case 0x00:
-	// 			timer_controls.tac_increment_cycles = TAC_00_CYCLES;
-	// 			break;
-	// 		case 0x01:
-	// 			timer_controls.tac_increment_cycles = TAC_01_CYCLES;
-	// 			break;
-	// 		case 0x02:
-	// 			timer_controls.tac_increment_cycles = TAC_10_CYCLES;
-	// 			break;
-	// 		case 0x03:
-	// 			timer_controls.tac_increment_cycles = TAC_11_CYCLES;
-	// 			break;
-	// 		}
-	// 	}
-	// } else if (addr < INT_ENABLE_ADDR)
-	// 	hram[addr - HRAM_ADDR] = val;
-	// else {
-	// 	fprintf(stderr, "IE writes aren't implemented yet\n");
-	// }
+	if (addr < ROM_BANK_N_ADDR)
+		rom_write(gb, addr, val);
+	else if (addr < VRAM_ADDR)
+		rom_write(gb, addr, val);
+	else if (addr < EXTERN_RAM_ADDR)
+		gb->memory.vram[addr - VRAM_ADDR] = val;
+	else if (addr < WRAM_0_ADDR)
+		rom_write(gb, addr, val);
+	else if (addr < WRAM_N_ADDR)
+		gb->memory.ram[addr - WRAM_0_ADDR] = val;
+	else if (addr < ECHO_RAM_ADDR)
+		gb->memory.ram[addr - WRAM_0_ADDR] = val;
+	else if (addr < OAM_ADDR)
+		assert(!"write8: use of echo ram is prohibited\n");
+	else if (addr < INVAL_MEM_ADDR)
+		gb->memory.oam[addr - OAM_ADDR] = val;
+	else if (addr < IO_REGS_ADDR)
+		assert(!"write8: use of 0xFEA0-0xFEFF is prohibited\n");
+	else if (addr < HRAM_ADDR) {
+		gb->memory.io_registers[addr - IO_REGS_ADDR] = val;
+		if (addr == SERIAL_TRANSFER)
+			platform_serial_print(val);
+		else if (addr == DIV_ADDR) {
+			gb->memory.io_registers[addr - IO_REGS_ADDR] = 0;
+			gb->timer_controls.div_cycle_counter = 0;
+		} else if (addr == TAC_ADDR) {
+			gb->timer_controls.tac_enable = val & 0x04;
+			switch (val & 0x03) {
+			case 0x00:
+				gb->timer_controls.tac_increment_cycles = TAC_00_CYCLES;
+				break;
+			case 0x01:
+				gb->timer_controls.tac_increment_cycles = TAC_01_CYCLES;
+				break;
+			case 0x02:
+				gb->timer_controls.tac_increment_cycles = TAC_10_CYCLES;
+				break;
+			case 0x03:
+				gb->timer_controls.tac_increment_cycles = TAC_11_CYCLES;
+				break;
+			}
+		}
+	} else if (addr < INT_ENABLE_ADDR)
+		gb->memory.hram[addr - HRAM_ADDR] = val;
+	else {
+		assert(!"IE writes aren't implemented yet\n");
+	}
 #endif
 }
 
-u8
-mbc1_read(const Gameboy *gb, const u16 addr) {
+u8 mbc1_read(const Gameboy *gb, const u16 addr) {
 	assert(addr < WRAM_0_ADDR && !(addr >= VRAM_ADDR && addr < WRAM_0_ADDR));
 
 	if (addr < ROM_BANK_N_ADDR) { // ROM bank X0
@@ -93,8 +131,7 @@ mbc1_read(const Gameboy *gb, const u16 addr) {
 	}
 }
 
-u8
-rom_read(const Gameboy *gb, const u16 addr) {
+u8 rom_read(const Gameboy *gb, const u16 addr) {
 	if (gb->rom.boot_rom_enabled) {
 		assert(addr <= 0x00FF);
 		return gb->rom.boot_rom[addr];
@@ -113,8 +150,7 @@ rom_read(const Gameboy *gb, const u16 addr) {
 	}
 }
 
-u8
-read8(const Gameboy *gb, const u16 addr) {
+u8 read8(const Gameboy *gb, const u16 addr) {
 #ifdef CPU_TEST
 	return gb->memory.test_memory[addr];
 #else
