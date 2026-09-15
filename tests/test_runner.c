@@ -40,6 +40,8 @@ static u64 now_ns(void) {
 // clang-format on
 
 int main(void) {
+	fprintf(stderr, "NOTE: The prints here are out of sync. The test suite either hits an assert (and fails)\
+			or passes and prints the total time it took to run the tests\n");
 
 	u64 start = now_ns();
 

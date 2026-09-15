@@ -1,5 +1,5 @@
 #include "../gameboy/gameboy.h"
-#include "../platform/desktop.h"
+#include "../platform/platform.h"
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
