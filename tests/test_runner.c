@@ -51,7 +51,7 @@ int main(void) {
 
 	u64 end = now_ns();
 
-	fprintf(stderr, "All game load tests passed in %.3fms\n", (end - start) / 1000000.0);
+	fprintf(stderr, "All (non-cpu instr) tests passed in %.3fms\n", (end - start) / 1000000.0);
 
 	return 0;
 }

@@ -209,7 +209,7 @@ void test_memory_write(void) {
 	assert(gb.memory.hram[sizeof(gb.memory.hram) - 1] == 0xA1);
 	assert(gb.memory.hram[0x0008] == HRAM_FILL);
 
-	// ROM is controller space; unused memory and IE writes currently assert.
+	// TODO: ROM is controller space; unused memory and IE writes currently assert.
 
 	// 16-bit writes store the low byte first, including across region edges.
 	write16(&gb, WRAM_0_ADDR + 0x0100, 0x1234);
