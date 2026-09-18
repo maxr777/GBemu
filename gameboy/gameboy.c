@@ -1,6 +1,6 @@
 #include "gameboy.h"
 #include "../misc/types.h"
-#include "../platform/desktop.h"
+#include "../platform/platform.h"
 #include <stdbool.h>
 
 static u8 BOOT_ROM[] = {

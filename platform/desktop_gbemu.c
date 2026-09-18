@@ -2,7 +2,7 @@
 #include "../gameboy/constants.h"
 #include "../gameboy/gameboy.h"
 #include "../misc/types.h"
-#include "desktop.h"
+#include "platform.h"
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>

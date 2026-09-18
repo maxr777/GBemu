@@ -1,5 +1,5 @@
-#ifndef DESKTOP_H
-#define DESKTOP_H
+#ifndef PLATFORM_H
+#define PLATFORM_H
 
 #include "../gameboy/gameboy.h"
 

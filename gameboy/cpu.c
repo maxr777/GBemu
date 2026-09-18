@@ -1,4 +1,4 @@
-#include "../platform/desktop.h"
+#include "../platform/platform.h"
 #include "gameboy.h"
 
 /*
