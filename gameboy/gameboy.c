@@ -1,5 +1,6 @@
 #include "gameboy.h"
 #include "../misc/types.h"
+#include "../misc/utils.h"
 #include "../platform/platform.h"
 #include <stdbool.h>
 
@@ -27,19 +28,17 @@ static u8 BOOT_ROM[] = {
     0x4d, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x3e, 0x01, 0xe0, 0x50};
 
-Gameboy gameboy_initialize(const char *filepath) {
-	Gameboy gb = {};
+void gameboy_initialize(const char *filepath, Gameboy *gb) {
+	gb_memset(gb, 0, sizeof(*gb));
 
-	platform_game_load(filepath, &gb.rom);
+	platform_game_load(filepath, &gb->rom);
 
 	// Everything that's different than 0 on boot
-	gb.rom.boot_rom = BOOT_ROM;
-	gb.rom.boot_rom_enabled = true;
-	gb.mbc1.ram_bank_number = 1;
-	gb.cpu.ime_enable_counter = -1;
-	gb.timer_controls.tac_increment_cycles = 256;
-
-	return gb;
+	gb->rom.boot_rom = BOOT_ROM;
+	gb->rom.boot_rom_enabled = true;
+	gb->mbc1.ram_bank_number = 1;
+	gb->cpu.ime_enable_counter = -1;
+	gb->timer_controls.tac_increment_cycles = 256;
 }
 
 void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {

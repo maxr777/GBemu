@@ -83,9 +83,11 @@ void write8(Gameboy *gb, const u16 addr, const u8 val) {
 		assert(!"write8: use of 0xFEA0-0xFEFF is prohibited\n");
 	else if (addr < HRAM_ADDR) {
 		gb->memory.io_registers[addr - IO_REGS_ADDR] = val;
-		if (addr == SERIAL_TRANSFER)
+		if (addr == BOOT_ROM_DISABLE && val != 0) {
+			gb->rom.boot_rom_enabled = false;
+		} else if (addr == SERIAL_TRANSFER) {
 			platform_serial_print(val);
-		else if (addr == DIV_ADDR) {
+		} else if (addr == DIV_ADDR) {
 			gb->memory.io_registers[addr - IO_REGS_ADDR] = 0;
 			gb->timer_controls.div_cycle_counter = 0;
 		} else if (addr == TAC_ADDR) {
@@ -132,10 +134,7 @@ u8 mbc1_read(const Gameboy *gb, const u16 addr) {
 }
 
 u8 rom_read(const Gameboy *gb, const u16 addr) {
-	if (gb->rom.boot_rom_enabled) {
-		assert(addr <= 0x00FF);
-		return gb->rom.boot_rom[addr];
-	}
+	if (gb->rom.boot_rom_enabled && addr <= 0x00FF) return gb->rom.boot_rom[addr];
 
 	switch (gb->rom.cartridge_header.cartridge_type) {
 	case 0x00:

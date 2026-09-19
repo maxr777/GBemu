@@ -116,7 +116,7 @@ typedef struct {
 
 // ==================== DECLARATIONS ====================
 
-Gameboy gameboy_initialize(const char *filepath);
+void gameboy_initialize(const char *filepath, Gameboy *gb);
 
 // ==================== CPU ====================
 

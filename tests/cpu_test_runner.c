@@ -41,11 +41,12 @@ static u64 now_ns(void) {
 
 #define CPU_TEST
 
+#include "../gameboy/gameboy_inc.h"
+
 // clang-format off
 #include "../platform/desktop.c"
-#include "../gameboy/memory.c"
-#include "../gameboy/cpu.c"
-#include "../gameboy/gameboy.c"
+#include "../misc/utils.c"
+#include "../gameboy/gameboy_inc.c"
 #include "../external/cJSON/cJSON.c"
 #include "cpu_tests.c"
 // clang-format on

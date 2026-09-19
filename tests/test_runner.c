@@ -5,6 +5,7 @@
 #include <time.h>
 #endif
 
+#include "../gameboy/gameboy_inc.h"
 #include "../misc/types.h"
 #include <stdint.h>
 #include <stdio.h>
@@ -35,9 +36,11 @@ static u64 now_ns(void) {
 
 // clang-format off
 #include "../platform/desktop.c"
-#include "../gameboy/memory.c"
+#include "../misc/utils.c"
+#include "../gameboy/gameboy_inc.c"
 #include "game_load_test.c"
 #include "memory_map_test.c"
+#include "mooneye_tests.c"
 // clang-format on
 
 int main(void) {
@@ -56,6 +59,7 @@ int main(void) {
 	test_game_load_too_small();
 	test_memory_read();
 	test_memory_write();
+	test_mooneye();
 
 	u64 end = now_ns();
 
