@@ -8,6 +8,7 @@
 #include "../misc/types.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <unistd.h>
 
 static u64 now_ns(void) {
 #ifdef _WIN32
@@ -40,7 +41,12 @@ static u64 now_ns(void) {
 // clang-format on
 
 int main(void) {
-	fprintf(stderr, "NOTE: The prints here are out of sync. The test suite either hits an assert (and fails) "
+	bool color = isatty(fileno(stderr));
+
+	if (color) fprintf(stderr, "\033[1;33mNOTE:\033[0m ");
+	else fprintf(stderr, "NOTE: ");
+
+	fprintf(stderr, "The prints below are out of sync. The test suite either hits an assert (and fails) "
 			"or passes and prints the total time it took to run the tests\n");
 
 	u64 start = now_ns();
@@ -53,7 +59,9 @@ int main(void) {
 
 	u64 end = now_ns();
 
+	if (color) fprintf(stderr, "\033[1;36m");
 	fprintf(stderr, "All (non-cpu instr) tests passed in %.3fms\n", (end - start) / 1000000.0);
+	if (color) fprintf(stderr, "\033[0m");
 
 	return 0;
 }

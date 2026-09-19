@@ -14,6 +14,7 @@
 #include "../misc/types.h"
 #include <stdint.h>
 #include <stdio.h>
+#include <unistd.h>
 
 static u64 now_ns(void) {
 #ifdef _WIN32
@@ -50,12 +51,15 @@ static u64 now_ns(void) {
 // clang-format on
 
 int main(void) {
+	bool color = isatty(fileno(stderr));
 
 	u64 start = now_ns();
 	test_cpu();
 	u64 end = now_ns();
 
+	if (color) fprintf(stderr, "\033[1;36m");
 	fprintf(stderr, "All CPU tests passed in %.3fms\n", (end - start) / 1000000.0);
+	if (color) fprintf(stderr, "\033[0m");
 
 	return 0;
 }

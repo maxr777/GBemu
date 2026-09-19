@@ -20,7 +20,7 @@ To build the project, a C compiler is required:
 
 Linux: ```gcc```
 
-Windows: ```mingw``` (basically gcc for windows)  
+Windows: ```mingw```
 
 Note that first build also compiles raylib, so it will be relatively slow.
 Everything after that just reuses ```libraylib.a```.
@@ -30,3 +30,5 @@ Everything after that just reuses ```libraylib.a```.
 Run ```./run.sh``` on Linux.
 
 Run ```run.bat``` on Windows.
+
+```./run.sh --cpu``` to run the CPU tests (they take long, so they're not run by default).
