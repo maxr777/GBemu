@@ -46,7 +46,7 @@ void mbc1_write(Gameboy *gb, const u16 addr, const u8 val) {
 void rom_write(Gameboy *gb, const u16 addr, const u8 val) {
 	switch (gb->rom.cartridge_header.cartridge_type) {
 	case 0x00:
-		assert(!"Writing to ROM with MCB0 is prohibited\n");
+		assert(!"Writing to ROM with MCB0 is prohibited");
 		break;
 	case 0x01:
 	case 0x02:
@@ -63,25 +63,25 @@ void write8(Gameboy *gb, const u16 addr, const u8 val) {
 #ifdef CPU_TEST
 	gb->memory.test_memory[addr] = val;
 #else
-	if (addr < ROM_BANK_N_ADDR)
+	if (addr < ROM_BANK_N_ADDR) {
 		rom_write(gb, addr, val);
-	else if (addr < VRAM_ADDR)
+	} else if (addr < VRAM_ADDR) {
 		rom_write(gb, addr, val);
-	else if (addr < EXTERN_RAM_ADDR)
+	} else if (addr < EXTERN_RAM_ADDR) {
 		gb->memory.vram[addr - VRAM_ADDR] = val;
-	else if (addr < WRAM_0_ADDR)
+	} else if (addr < WRAM_0_ADDR) {
 		rom_write(gb, addr, val);
-	else if (addr < WRAM_N_ADDR)
+	} else if (addr < WRAM_N_ADDR) {
 		gb->memory.ram[addr - WRAM_0_ADDR] = val;
-	else if (addr < ECHO_RAM_ADDR)
+	} else if (addr < ECHO_RAM_ADDR) {
 		gb->memory.ram[addr - WRAM_0_ADDR] = val;
-	else if (addr < OAM_ADDR)
+	} else if (addr < OAM_ADDR) {
 		assert(!"write8: use of echo ram is prohibited\n");
-	else if (addr < INVAL_MEM_ADDR)
+	} else if (addr < INVAL_MEM_ADDR) {
 		gb->memory.oam[addr - OAM_ADDR] = val;
-	else if (addr < IO_REGS_ADDR)
+	} else if (addr < IO_REGS_ADDR) {
 		assert(!"write8: use of 0xFEA0-0xFEFF is prohibited\n");
-	else if (addr < HRAM_ADDR) {
+	} else if (addr < HRAM_ADDR) {
 		gb->memory.io_registers[addr - IO_REGS_ADDR] = val;
 		if (addr == BOOT_ROM_DISABLE && val != 0) {
 			gb->rom.boot_rom_enabled = false;
@@ -89,27 +89,14 @@ void write8(Gameboy *gb, const u16 addr, const u8 val) {
 			platform_serial_print(val);
 		} else if (addr == DIV_ADDR) {
 			gb->memory.io_registers[addr - IO_REGS_ADDR] = 0;
-			gb->timer_controls.div_cycle_counter = 0;
+			gb->timer.div_elapsed = 0;
 		} else if (addr == TAC_ADDR) {
-			gb->timer_controls.tac_enable = val & 0x04;
-			switch (val & 0x03) {
-			case 0x00:
-				gb->timer_controls.tac_increment_cycles = TAC_00_CYCLES;
-				break;
-			case 0x01:
-				gb->timer_controls.tac_increment_cycles = TAC_01_CYCLES;
-				break;
-			case 0x02:
-				gb->timer_controls.tac_increment_cycles = TAC_10_CYCLES;
-				break;
-			case 0x03:
-				gb->timer_controls.tac_increment_cycles = TAC_11_CYCLES;
-				break;
-			}
+			// Bits 7-3 read as ones and have no writeable function
+			gb->memory.io_registers[addr - IO_REGS_ADDR] = val | 0xF8;
 		}
-	} else if (addr < INT_ENABLE_ADDR)
+	} else if (addr < INT_ENABLE_ADDR) {
 		gb->memory.hram[addr - HRAM_ADDR] = val;
-	else {
+	} else {
 		assert(!"IE writes aren't implemented yet\n");
 	}
 #endif

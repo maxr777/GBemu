@@ -61,24 +61,12 @@ typedef struct {
 } CartridgeHeader;
 
 typedef struct {
-	int div_cycle_counter;
-	int tima_cycle_counter;
-	bool tac_enable;
-	// TAC's clock select - increment TIMA every:
-	// (00) 256 cycles,
-	// (01) 4 cycles,
-	// (10) 16 cycles,
-	// (11) 64 cycles
-	int tac_increment_cycles;
-} Timer_controls;
-
-typedef struct {
 	bool ram_enable;
 	u8 first_rom_bank_reg;
 	u8 second_rom_bank_reg;
 	u8 ram_bank_number;
 	bool banking_mode_is_advanced; // 0 = simple, 1 = advanced
-} MBC1_State;
+} MBC1State;
 
 typedef struct {
 	u8 *game_rom;
@@ -107,16 +95,22 @@ typedef struct {
 } Memory;
 
 typedef struct {
+	u64 div_elapsed;
+	u64 tima_elapsed;
+} TimerCounters;
+
+typedef struct {
 	CPU cpu;
 	ROM rom;
 	Memory memory;
-	MBC1_State mbc1;
-	Timer_controls timer_controls;
+	MBC1State mbc1;
+	TimerCounters timer;
 } Gameboy;
 
 // ==================== DECLARATIONS ====================
 
 void gameboy_initialize(const char *filepath, Gameboy *gb);
+void gameboy_step(Gameboy *gb, const bool debug);
 
 // ==================== CPU ====================
 
@@ -260,5 +254,11 @@ u16 read16(const Gameboy *gb, const u16 addr);
 u8 read8(const Gameboy *gb, const u16 addr);
 u8 rom_read(const Gameboy *gb, const u16 addr);
 u8 mbc1_read(const Gameboy *gb, const u16 addr);
+
+// ==================== TIMERS ====================
+
+int tac_cycles_get(const u8 tac);
+bool tac_enable_get(const u8 tac);
+void timer_advance(Gameboy *gb, const u64 cycles_elapsed);
 
 #endif

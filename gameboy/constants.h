@@ -7,13 +7,12 @@
 #define VRAM_SIZE	0x2000
 #define EXTERN_RAM_SIZE 0x2000
 #define WRAM_SIZE	0x1000
-#define CPU_FREQ	4194304
-// Cycles per scanline: 456
-// Scanlines per frame: 154 (144 visible + 10 vblank lines)
-#define CYCLES_PER_SCANLINE 456 * 154 // 70224
-// CPU clock: 4.194304 MHz
-// 4194304 / 70224 = 59.7275Hz (Vertical sync)
-#define TARGET_FRAMETIME 1.0f / (4194304.0f / 70224)
+// All cycle counts in the emulator use M-cycles.
+#define CPU_FREQ	    1048576U
+#define CYCLES_PER_SCANLINE 114U
+#define SCANLINES_PER_FRAME 154U
+#define CYCLES_PER_FRAME    (CYCLES_PER_SCANLINE * SCANLINES_PER_FRAME)
+#define TARGET_FRAMETIME    ((float)CYCLES_PER_FRAME / (float)CPU_FREQ)
 
 // ==================== MEMORY MAP ====================
 
@@ -111,10 +110,10 @@
 
 // ================ TIMER FREQ CONSTANTS ================
 
-#define CYCLES_PER_DIV CPU_FREQ / 16384
-#define TAC_00_CYCLES  CPU_FREQ / 4096
-#define TAC_01_CYCLES  CPU_FREQ / 262144
-#define TAC_10_CYCLES  CPU_FREQ / 65536
-#define TAC_11_CYCLES  CPU_FREQ / 16384
+#define CYCLES_PER_DIV (CPU_FREQ / 16384U)
+#define TAC_00_CYCLES  (CPU_FREQ / 4096U)
+#define TAC_01_CYCLES  (CPU_FREQ / 262144U)
+#define TAC_10_CYCLES  (CPU_FREQ / 65536U)
+#define TAC_11_CYCLES  (CPU_FREQ / 16384U)
 
 #endif

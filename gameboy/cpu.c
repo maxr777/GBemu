@@ -599,7 +599,7 @@ void bit_u3_r8(Gameboy *gb, const int bit_num, const u8 src) {
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, true);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
@@ -609,14 +609,14 @@ void bit_u3_aHL(Gameboy *gb, const int bit_num) {
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, true);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
 void res_u3_r8(Gameboy *gb, const int bit_num, u8 *src) {
 	*src &= ~(1 << bit_num);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
@@ -625,14 +625,14 @@ void res_u3_aHL(Gameboy *gb, const int bit_num) {
 	val &= ~(1 << bit_num);
 	write8(gb, gb->cpu.regs[HL].full, val);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 4;
 }
 
 void set_u3_r8(Gameboy *gb, const int bit_num, u8 *src) {
 	*src |= (1 << bit_num);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
@@ -641,7 +641,7 @@ void set_u3_aHL(Gameboy *gb, const int bit_num) {
 	val |= (1 << bit_num);
 	write8(gb, gb->cpu.regs[HL].full, val);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 4;
 }
 
@@ -733,7 +733,7 @@ void rlc_r8(Gameboy *gb, u8 *src) {
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, false);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
@@ -749,7 +749,7 @@ void rlc_aHL(Gameboy *gb) {
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, false);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 4;
 }
 
@@ -762,7 +762,7 @@ void rrc_r8(Gameboy *gb, u8 *src) {
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, false);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
@@ -778,7 +778,7 @@ void rrc_aHL(Gameboy *gb) {
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, false);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 4;
 }
 
@@ -792,7 +792,7 @@ void rl_r8(Gameboy *gb, u8 *src) {
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, false);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
@@ -808,7 +808,7 @@ void rl_aHL(Gameboy *gb) {
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, false);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 4;
 }
 
@@ -822,7 +822,7 @@ void rr_r8(Gameboy *gb, u8 *src) {
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, false);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
@@ -838,7 +838,7 @@ void rr_aHL(Gameboy *gb) {
 	set_flag(&gb->cpu, N, false);
 	set_flag(&gb->cpu, H, false);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 4;
 }
 
@@ -849,7 +849,7 @@ void sla_r8(Gameboy *gb, u8 *src) {
 	*src <<= 1;
 	set_flag(&gb->cpu, Z, !(*src));
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
@@ -862,7 +862,7 @@ void sla_aHL(Gameboy *gb) {
 	write8(gb, gb->cpu.regs[HL].full, val);
 	set_flag(&gb->cpu, Z, !val);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 4;
 }
 
@@ -875,7 +875,7 @@ void sra_r8(Gameboy *gb, u8 *src) {
 	set_flag(&gb->cpu, Z, !(*src));
 	*src |= (sign_bit << 7);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
@@ -890,7 +890,7 @@ void sra_aHL(Gameboy *gb) {
 	val |= (sign_bit << 7);
 	write8(gb, gb->cpu.regs[HL].full, val);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 4;
 }
 
@@ -904,7 +904,7 @@ void swap_r8(Gameboy *gb, u8 *src) {
 	set_flag(&gb->cpu, H, false);
 	set_flag(&gb->cpu, C, false);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
@@ -920,7 +920,7 @@ void swap_aHL(Gameboy *gb) {
 	set_flag(&gb->cpu, H, false);
 	set_flag(&gb->cpu, C, false);
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 4;
 }
 
@@ -931,7 +931,7 @@ void srl_r8(Gameboy *gb, u8 *src) {
 	*src >>= 1;
 	set_flag(&gb->cpu, Z, !(*src));
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 2;
 }
 
@@ -945,7 +945,7 @@ void srl_aHL(Gameboy *gb) {
 	write8(gb, gb->cpu.regs[HL].full, val);
 	set_flag(&gb->cpu, Z, !(val));
 
-	gb->cpu.regs[PC].full += 2;
+	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 4;
 }
 
@@ -1208,7 +1208,7 @@ void nop(Gameboy *gb) {
 
 void stop_n8(Gameboy *gb, const u8 val) {
 	platform_error_log("stop() is a stub - TODO implementation\n");
-	// TODO: Remember about the divider register (0xFF04)
-
+	// TODO: "(DIV register): Additionally, this register is reset when executing the stop instruction,
+	// and only begins ticking again once stop mode ends."
 	gb->cpu.regs[PC].full += 2;
 }

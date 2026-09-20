@@ -259,8 +259,8 @@ void test_cpu() {
 			// These CPU tests provide the opcode separately and set PC as if the
 			// opcode fetch already advanced it. opcode_execute() expects PC to
 			// still point at the opcode, because each instruction advances PC by
-			// its full length - that's why I use PC - 1 here
-			u16 expected_pc = (i == 0xCB) ? test_expected.pc : test_expected.pc - 1;
+			// its full length - that's why I use PC - 1 here.
+			u16 expected_pc = test_expected.pc - 1;
 			if (gb.cpu.regs[PC].full != expected_pc) pass = false;
 			if (gb.cpu.regs[SP].full != test_expected.sp) pass = false;
 
@@ -303,7 +303,9 @@ void test_cpu() {
 				printf("\n***\n\n");
 
 				printf("EXPECTED:\n");
-				test_state_print(&test_expected);
+				TestState expected_display = test_expected;
+				expected_display.pc = expected_pc;
+				test_state_print(&expected_display);
 
 				abort();
 			}

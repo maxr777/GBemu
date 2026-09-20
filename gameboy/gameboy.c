@@ -28,17 +28,73 @@ static u8 BOOT_ROM[] = {
     0x4d, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x3e, 0x01, 0xe0, 0x50};
 
+int tac_cycles_get(const u8 tac) {
+	switch (tac & 0x03) {
+	case 0x00:
+		return TAC_00_CYCLES;
+	case 0x01:
+		return TAC_01_CYCLES;
+	case 0x02:
+		return TAC_10_CYCLES;
+	case 0x03:
+		return TAC_11_CYCLES;
+	}
+
+	return 0;
+}
+
+bool tac_enable_get(const u8 tac) {
+	return tac & 0x04;
+}
+
 void gameboy_initialize(const char *filepath, Gameboy *gb) {
+	// Deterministic baseline: real WRAM/HRAM and wave RAM are undefined on power-up.
 	gb_memset(gb, 0, sizeof(*gb));
 
 	platform_game_load(filepath, &gb->rom);
 
-	// Everything that's different than 0 on boot
+	// DMG power-on state, BEFORE the boot ROM runs at PC = 0x0000.
+	// The boot ROM establishes SP, CPU registers, LCDC, BGP, and sound settings.
+	// Do not copy the post-boot (PC = 0x0100) values here.
+	// https://gbdev.io/pandocs/Power_Up_Sequence.html
 	gb->rom.boot_rom = BOOT_ROM;
 	gb->rom.boot_rom_enabled = true;
-	gb->mbc1.ram_bank_number = 1;
+	gb->rom.current_rom_bank = 1;
+	gb->mbc1.first_rom_bank_reg = 1;
+	// RAM bank 0, RAM disabled, and simple MBC1 banking mode remain zero.
 	gb->cpu.ime_enable_counter = -1;
-	gb->timer_controls.tac_increment_cycles = 256;
+
+	u8 *io = gb->memory.io_registers;
+	io[JOYPAD_INPUT - IO_REGS_ADDR] = 0xCF;	  // No buttons pressed; both groups selected.
+	io[SERIAL_CONTROL - IO_REGS_ADDR] = 0x7E; // Transfer stopped, external clock (DMG).
+	io[TAC_ADDR - IO_REGS_ADDR] = 0xF8;	  // Timer disabled, clock select 00.
+	io[INTERRUPT_FLAG - IO_REGS_ADDR] = 0xE0; // No pending interrupts.
+	io[LCD_STATUS - IO_REGS_ADDR] = 0x80;	  // LCD off; bit 7 reads as one.
+	// DIV, TIMA, TMA, and LCDC start at zero in this implementation.
+
+	// Sound is powered off. These are read-as-one bits, not enabled features.
+	// TODO: Enforce read masks in read8() when implementing each device so
+	// subsequent writes cannot clear them. Initialization alone is insufficient.
+	io[CH1_SWEEP - IO_REGS_ADDR] = 0x80;
+	io[CH1_TIMER - IO_REGS_ADDR] = 0x3F;
+	io[CH1_PERIOD_LOW - IO_REGS_ADDR] = 0xFF;
+	io[CH1_PERIOD_HIGH - IO_REGS_ADDR] = 0xBF;
+	io[CH2_TIMER - IO_REGS_ADDR] = 0x3F;
+	io[CH2_PERIOD_LOW - IO_REGS_ADDR] = 0xFF;
+	io[CH2_PERIOD_HIGH - IO_REGS_ADDR] = 0xBF;
+	io[CH3_DAC_ENABLE - IO_REGS_ADDR] = 0x7F;
+	io[CH3_LEN_TIMER - IO_REGS_ADDR] = 0xFF;
+	io[CH3_OUTPUT_LVL - IO_REGS_ADDR] = 0x9F;
+	io[CH3_PERIOD_LOW - IO_REGS_ADDR] = 0xFF;
+	io[CH3_PERIOD_HIGH - IO_REGS_ADDR] = 0xBF;
+	io[CH4_LEN_TIMER - IO_REGS_ADDR] = 0xFF;
+	io[CH4_CONTROL - IO_REGS_ADDR] = 0xBF;
+	io[AUDIO_CONTROL - IO_REGS_ADDR] = 0x70;
+
+	// Undefined on real DMG hardware; use a common, deterministic startup value.
+	io[0xFF46 - IO_REGS_ADDR] = 0xFF; // OAM DMA register (does not start a transfer).
+	io[OBJ_PALETTE0_DATA - IO_REGS_ADDR] = 0xFF;
+	io[OBJ_PALETTE1_DATA - IO_REGS_ADDR] = 0xFF;
 }
 
 void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
@@ -2132,6 +2188,67 @@ void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug) {
 			gb->cpu.regs[PC].full += 1;
 			gb->cpu.cycle += 1;
 			break;
+		}
+	}
+}
+
+void gameboy_step(Gameboy *gb, const bool debug) {
+	u64 cycle_pre = gb->cpu.cycle;
+
+	u8 opcode = read8(gb, gb->cpu.regs[PC].full);
+	opcode_execute(opcode, gb, debug);
+
+	u64 cycles_elapsed = gb->cpu.cycle - cycle_pre;
+	timer_advance(gb, cycles_elapsed);
+}
+
+void timer_advance(Gameboy *gb, const u64 cycles_elapsed) {
+	u8 *div = &gb->memory.io_registers[DIV_ADDR - IO_REGS_ADDR];
+	u64 *div_timer = &gb->timer.div_elapsed;
+
+	*div_timer += cycles_elapsed;
+	if (*div_timer >= CYCLES_PER_DIV) {
+		++(*div);
+		*div_timer %= cycles_elapsed;
+	}
+
+	u8 *tima = &gb->memory.io_registers[TIMA_ADDR - IO_REGS_ADDR];
+	u8 *tma = &gb->memory.io_registers[TMA_ADDR - IO_REGS_ADDR];
+	u8 *tac = &gb->memory.io_registers[TAC_ADDR - IO_REGS_ADDR];
+	u64 *tima_timer = &gb->timer.tima_elapsed;
+
+	int tac_increment = 0;
+	// Bits 0 and 1 of tac set the frequency at which TIMA is incremented
+	switch (*tac & 0x03) {
+	case 0x00: {
+		tac_increment = TAC_00_CYCLES;
+		break;
+	}
+	case 0x01: {
+		tac_increment = TAC_01_CYCLES;
+		break;
+	}
+	case 0x02: {
+		tac_increment = TAC_10_CYCLES;
+		break;
+	}
+	case 0x03: {
+		tac_increment = TAC_11_CYCLES;
+		break;
+	}
+	}
+
+	// Bit 2 of tac decides whether TIMA is incremented or not
+	if (*tac & 0x04) {
+		*tima_timer += cycles_elapsed;
+		if (*tima_timer >= tac_increment) {
+			if (*tima == 0xFF) {
+				*tima = *tma;
+				// TODO: request an interrupt
+			} else {
+				++(*tima);
+			}
+			*tima_timer %= cycles_elapsed;
 		}
 	}
 }
