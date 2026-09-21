@@ -84,7 +84,7 @@ void test_mooneye() {
 			if (gb.cpu.cycle > MAX_CYCLES) assert(!"Fail: test reached max amount of cycles");
 
 			opcode = read8(&gb, gb.cpu.regs[PC].full);
-			gameboy_step(&gb, false);
+			gameboy_step(&gb);
 		}
 
 		if (mooneye_passed(&gb)) continue;

@@ -109,13 +109,13 @@ typedef struct {
 // ==================== DECLARATIONS ====================
 
 void gameboy_initialize(const char *filepath, Gameboy *gb);
-void gameboy_step(Gameboy *gb, const bool debug);
+void gameboy_step(Gameboy *gb);
 
 // ==================== CPU ====================
 
 bool get_flag(const CPU *cpu, const int flag);
 void set_flag(CPU *cpu, const int flag, const bool value);
-void opcode_execute(const u8 opcode, Gameboy *gb, const bool debug);
+void opcode_execute(const u8 opcode, Gameboy *gb);
 
 // LOADS
 void ld_r8_r8(Gameboy *gb, u8 *dest, const u8 src);

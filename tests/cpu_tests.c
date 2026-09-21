@@ -180,13 +180,13 @@ void test_cpu() {
 				write8(&gb, test_initial.mem_addr[k], test_initial.mem_val[k]);
 			}
 
-			opcode_execute(i, &gb, false);
+			opcode_execute(i, &gb);
 			// For CB, if a test fails the name implies which opcode to look for
 			// For example, if "cb 40 22" fails then it means that opcode 0x40
 			// (from the prefixed table) has an bug
 			if (i == 0xCB) {
 				u8 prefixed_opcode = read8(&gb, gb.cpu.regs[PC].full);
-				opcode_execute(prefixed_opcode, &gb, false);
+				opcode_execute(prefixed_opcode, &gb);
 			}
 
 			TestState test_expected = {};
