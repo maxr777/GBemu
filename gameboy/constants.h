@@ -1,5 +1,4 @@
-#ifndef CONSTANTS_H
-#define CONSTANTS_H
+#pragma once
 
 // ==================== HARDWARE CONSTANTS ====================
 
@@ -115,5 +114,3 @@
 #define TAC_01_CYCLES  (CPU_FREQ / 262144U)
 #define TAC_10_CYCLES  (CPU_FREQ / 65536U)
 #define TAC_11_CYCLES  (CPU_FREQ / 16384U)
-
-#endif

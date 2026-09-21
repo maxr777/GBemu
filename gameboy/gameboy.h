@@ -1,5 +1,4 @@
-#ifndef GAMEBOY_H
-#define GAMEBOY_H
+#pragma once
 
 #include "../misc/types.h"
 #include "constants.h"
@@ -260,5 +259,3 @@ u8 mbc1_read(const Gameboy *gb, const u16 addr);
 int tac_cycles_get(const u8 tac);
 bool tac_enable_get(const u8 tac);
 void timer_advance(Gameboy *gb, const u64 cycles_elapsed);
-
-#endif

@@ -6,7 +6,7 @@ A simple multi-platform gameboy emulator. Desktop layer written with raylib. Pla
 
 The project uses unity build approach (one big translation unit).  
 
-The ```platform/``` directory contains the platform specific code as well as the entry points (e.g. ```desktop_gbemu.c``` is the desktop entry point and uses raylib).  
+The ```platform/``` directory contains platform specific code as well as the entry points (e.g. ```desktop_gbemu.c``` is the desktop entry point and uses raylib).  
 
 Tests and their runners are in the ```tests/``` directory.  
 

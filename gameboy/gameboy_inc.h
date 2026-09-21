@@ -1,7 +1,4 @@
-#ifndef GAMEBOY_INC_H
-#define GAMEBOY_INC_H
+#pragma once
 
 #include "constants.h"
 #include "gameboy.h"
-
-#endif // GAMEBOY_INC_H
