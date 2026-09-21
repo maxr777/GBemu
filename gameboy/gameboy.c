@@ -1696,6 +1696,19 @@ static void gameboy_step(Gameboy *gb) {
 	u8 opcode = read8(gb, gb->cpu.regs[PC].full);
 	opcode_execute(opcode, gb);
 
+	// The effect of ei is delayed by one instruction.
+	switch (gb->cpu.ime_enable_counter) {
+	case 1:
+		--gb->cpu.ime_enable_counter;
+		break;
+	case 0:
+		--gb->cpu.ime_enable_counter;
+		gb->cpu.ime = true;
+		break;
+	default:
+		break;
+	}
+
 	u64 cycles_elapsed = gb->cpu.cycle - cycle_pre;
 	timer_advance(gb, cycles_elapsed);
 }

@@ -1,0 +1,17 @@
+If:
+  PathMatch: (gameboy|misc|platform|tests)/.*\.[ch]
+CompileFlags:
+  # Match GBEMU_CFLAGS in build.sh and build.bat.
+  Add: [-std=c11, -Wall, -Wno-unused-function, -Wno-unused-const-variable]
+Diagnostics:
+  # Includes can supply declarations to later files in the unity build.
+  UnusedIncludes: None
+  MissingIncludes: None
+---
+If:
+  PathMatch: (gameboy|misc|platform|tests)/.*\.[ch]
+  PathExclude: [platform/desktop_gbemu\.c, tests/test_runner\.c, tests/cpu_test_runner\.c]
+CompileFlags:
+  # Included files get their static definitions from the full unity build.
+  # Keep this diagnostic enabled when checking the actual entry points.
+  Add: [-Wno-undefined-internal]

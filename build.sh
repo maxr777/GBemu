@@ -1,6 +1,9 @@
 #!/bin/bash
 set -e
 
+# Unity builds share functions and constants that not every runner uses.
+GBEMU_CFLAGS=(-std=c11 -Wall -Wno-unused-function -Wno-unused-const-variable)
+
 RAYLIB=external/raylib
 RAYLIB_LIB=$RAYLIB/libraylib.a
 RAYLIB_OBJECTS=(
@@ -41,7 +44,7 @@ gcc -o GBemu platform/desktop_gbemu.c -g -O2 \
     -I"$RAYLIB" \
     "$RAYLIB_LIB" \
     -lGL -lm -lpthread -ldl -lrt -lX11 \
-    -std=c11 -Wall
+    "${GBEMU_CFLAGS[@]}"
 
-gcc -o tests/cpu_test_runner tests/cpu_test_runner.c -g -std=c11 -Wall
-gcc -o tests/test_runner tests/test_runner.c -g -std=c11 -Wall
+gcc -o tests/cpu_test_runner tests/cpu_test_runner.c -g "${GBEMU_CFLAGS[@]}"
+gcc -o tests/test_runner tests/test_runner.c -g "${GBEMU_CFLAGS[@]}"

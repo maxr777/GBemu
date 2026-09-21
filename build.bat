@@ -1,6 +1,9 @@
 @echo off
 setlocal
 
+rem Unity builds share functions and constants that not every runner uses.
+set "GBEMU_CFLAGS=-std=c11 -Wall -Wno-unused-function -Wno-unused-const-variable"
+
 set "RAYLIB=external\raylib"
 set "RAYLIB_LIB=%RAYLIB%\libraylib_win.a"
 set "RAYLIB_OBJECTS=%RAYLIB%\rcore_win.obj %RAYLIB%\rshapes_win.obj %RAYLIB%\rtextures_win.obj %RAYLIB%\rtext_win.obj %RAYLIB%\rmodels_win.obj %RAYLIB%\utils_win.obj %RAYLIB%\rglfw_win.obj"
@@ -44,11 +47,11 @@ gcc -o GBemu.exe platform\desktop_gbemu.c -g -O2 ^
     -I"%RAYLIB%" ^
     "%RAYLIB_LIB%" ^
     -lopengl32 -lgdi32 -lwinmm ^
-    -std=c11 -Wall
+    %GBEMU_CFLAGS%
 if errorlevel 1 exit /b %errorlevel%
 
-gcc -o tests\cpu_test_runner.exe tests\cpu_test_runner.c -g -std=c11 -Wall
+gcc -o tests\cpu_test_runner.exe tests\cpu_test_runner.c -g %GBEMU_CFLAGS%
 if errorlevel 1 exit /b %errorlevel%
 
-gcc -o tests\test_runner.exe tests\test_runner.c -g -std=c11 -Wall
+gcc -o tests\test_runner.exe tests\test_runner.c -g %GBEMU_CFLAGS%
 if errorlevel 1 exit /b %errorlevel%
