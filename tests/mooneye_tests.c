@@ -1,4 +1,5 @@
 #include "../gameboy/gameboy.h"
+#include "../platform/platform.h"
 #include <assert.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -6,38 +7,38 @@
 #define MAX_CYCLES   100000000
 #define MOONEYE_PATH "tests/mooneye-tests/"
 const char *tests[] = {
-	// Interrupt registers and CPU interrupt handling
-	"acceptance/if_ie_registers",
-	"acceptance/ei_sequence",
-	"acceptance/ei_timing",
-	"acceptance/rapid_di_ei",
-	"acceptance/di_timing-GS",
-	"acceptance/intr_timing",
-	"acceptance/interrupts/ie_push",
-	"acceptance/reti_timing",
-	"acceptance/reti_intr_timing",
+    // Interrupt registers and CPU interrupt handling
+    "acceptance/if_ie_registers",
+    "acceptance/ei_sequence",
+    "acceptance/ei_timing",
+    "acceptance/rapid_di_ei",
+    "acceptance/di_timing-GS",
+    "acceptance/intr_timing",
+    "acceptance/interrupts/ie_push",
+    "acceptance/reti_timing",
+    "acceptance/reti_intr_timing",
 
-	// HALT behavior is coupled to pending interrupts and IME.
-	"acceptance/halt_ime0_ei",
-	"acceptance/halt_ime0_nointr_timing",
-	"acceptance/halt_ime1_timing",
-	"acceptance/halt_ime1_timing2-GS",
+    // HALT behavior is coupled to pending interrupts and IME.
+    "acceptance/halt_ime0_ei",
+    "acceptance/halt_ime0_nointr_timing",
+    "acceptance/halt_ime1_timing",
+    "acceptance/halt_ime1_timing2-GS",
 
-	// Divider and timer behavior
-	"acceptance/div_timing",
-	"acceptance/timer/tim01",
-	"acceptance/timer/tim10",
-	"acceptance/timer/tim11",
-	"acceptance/timer/tim00",
-	"acceptance/timer/div_write",
-	"acceptance/timer/tim01_div_trigger",
-	"acceptance/timer/tim10_div_trigger",
-	"acceptance/timer/tim11_div_trigger",
-	"acceptance/timer/tim00_div_trigger",
-	"acceptance/timer/rapid_toggle",
-	"acceptance/timer/tima_reload",
-	"acceptance/timer/tima_write_reloading",
-	"acceptance/timer/tma_write_reloading",
+    // Divider and timer behavior
+    "acceptance/div_timing",
+    "acceptance/timer/tim01",
+    "acceptance/timer/tim10",
+    "acceptance/timer/tim11",
+    "acceptance/timer/tim00",
+    "acceptance/timer/div_write",
+    "acceptance/timer/tim01_div_trigger",
+    "acceptance/timer/tim10_div_trigger",
+    "acceptance/timer/tim11_div_trigger",
+    "acceptance/timer/tim00_div_trigger",
+    "acceptance/timer/rapid_toggle",
+    "acceptance/timer/tima_reload",
+    "acceptance/timer/tima_write_reloading",
+    "acceptance/timer/tma_write_reloading",
 };
 
 #define TEST_COUNT (sizeof(tests) / sizeof(tests[0]))
@@ -84,6 +85,8 @@ static void test_mooneye() {
 			if (gb.cpu.cycle > MAX_CYCLES) assert(!"Fail: test reached max amount of cycles");
 
 			opcode = read8(&gb, gb.cpu.regs[PC].full);
+
+			// platform_debug_log(&gb);
 			gameboy_step(&gb);
 		}
 

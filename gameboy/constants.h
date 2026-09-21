@@ -26,7 +26,7 @@
 #define INVAL_MEM_ADDR	0xFEA0 // Prohibited
 #define IO_REGS_ADDR	0xFF00
 #define HRAM_ADDR	0xFF80
-#define INT_ENABLE_ADDR 0xFFFF
+#define IE_ADDR		0xFFFF
 
 // ================ IO REGISTERS ================
 
@@ -44,7 +44,7 @@
 #define TAC_ADDR  0xFF07
 
 // interrputs
-#define INTERRUPT_FLAG 0xFF0F
+#define IF_ADDR 0xFF0F
 
 // audio
 #define CH1_SWEEP	0xFF10

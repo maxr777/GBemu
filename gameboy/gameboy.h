@@ -91,6 +91,7 @@ typedef struct {
 	u8 io_registers[128];
 	u8 hram[127];
 	u8 display[160][144];
+	u8 ie;
 } Memory;
 
 typedef struct {
@@ -259,3 +260,7 @@ static u8 mbc1_read(const Gameboy *gb, const u16 addr);
 static int tac_cycles_get(const u8 tac);
 static bool tac_enable_get(const u8 tac);
 static void timer_advance(Gameboy *gb, const u64 cycles_elapsed);
+
+// ==================== INTERRUPTS ====================
+
+static bool interrupt_handle(Gameboy *gb);

@@ -12,3 +12,5 @@ tests/cpu_test_runner
 *.jpg
 *.png
 external/raylib/st*
+output
+output.txt

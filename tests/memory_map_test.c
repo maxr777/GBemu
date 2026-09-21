@@ -116,12 +116,12 @@ static void test_memory_read(void) {
 
 	// HRAM
 	assert(read8(&gb, HRAM_ADDR) == 0xA0);
-	assert(read8(&gb, INT_ENABLE_ADDR - 1) == 0xA1);
+	assert(read8(&gb, IE_ADDR - 1) == 0xA1);
 	assert(read8(&gb, HRAM_ADDR + 0x0008) == HRAM_FILL);
 
 	// IE is not implemented yet
-	assert(read8(&gb, INT_ENABLE_ADDR) == 0);
-	assert(read8(&gb, INT_ENABLE_ADDR) != read8(&gb, INT_ENABLE_ADDR - 1));
+	assert(read8(&gb, IE_ADDR) == 0);
+	assert(read8(&gb, IE_ADDR) != read8(&gb, IE_ADDR - 1));
 
 	assert(read16(&gb, WRAM_0_ADDR + 0x0100) == 0x1234);
 	assert(read16(&gb, ECHO_RAM_ADDR + 0x0100) == 0x1234);
@@ -164,7 +164,7 @@ static void test_memory_write(void) {
 	write8(&gb, IO_REGS_ADDR, 0xF0);
 	write8(&gb, HRAM_ADDR - 1, 0xF1);
 	write8(&gb, HRAM_ADDR, 0xA0);
-	write8(&gb, INT_ENABLE_ADDR - 1, 0xA1);
+	write8(&gb, IE_ADDR - 1, 0xA1);
 
 	// Check backing storage directly to verify the write address mapping.
 	// VRAM
@@ -225,7 +225,7 @@ static void test_memory_write(void) {
 	assert(gb.memory.io_registers[sizeof(gb.memory.io_registers) - 1] == 0xBC);
 	assert(gb.memory.hram[0] == 0x9A);
 
-	write16(&gb, INT_ENABLE_ADDR - 2, 0xDEF0);
+	write16(&gb, IE_ADDR - 2, 0xDEF0);
 	assert(gb.memory.hram[sizeof(gb.memory.hram) - 2] == 0xF0);
 	assert(gb.memory.hram[sizeof(gb.memory.hram) - 1] == 0xDE);
 }

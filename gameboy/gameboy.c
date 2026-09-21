@@ -69,7 +69,7 @@ static void gameboy_initialize(const char *filepath, Gameboy *gb) {
 	io[JOYPAD_INPUT - IO_REGS_ADDR] = 0xCF;	  // No buttons pressed; both groups selected.
 	io[SERIAL_CONTROL - IO_REGS_ADDR] = 0x7E; // Transfer stopped, external clock (DMG).
 	io[TAC_ADDR - IO_REGS_ADDR] = 0xF8;	  // Timer disabled, clock select 00.
-	io[INTERRUPT_FLAG - IO_REGS_ADDR] = 0xE0; // No pending interrupts.
+	io[IF_ADDR - IO_REGS_ADDR] = 0xE0;	  // No pending interrupts.
 	io[LCD_STATUS - IO_REGS_ADDR] = 0x80;	  // LCD off; bit 7 reads as one.
 	// DIV, TIMA, TMA, and LCDC start at zero in this implementation.
 
@@ -1693,24 +1693,61 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 static void gameboy_step(Gameboy *gb) {
 	u64 cycle_pre = gb->cpu.cycle;
 
-	u8 opcode = read8(gb, gb->cpu.regs[PC].full);
-	opcode_execute(opcode, gb);
+	if (!interrupt_handle(gb)) {
+		u8 opcode = read8(gb, gb->cpu.regs[PC].full);
+		opcode_execute(opcode, gb);
 
-	// The effect of ei is delayed by one instruction.
-	switch (gb->cpu.ime_enable_counter) {
-	case 1:
-		--gb->cpu.ime_enable_counter;
-		break;
-	case 0:
-		--gb->cpu.ime_enable_counter;
-		gb->cpu.ime = true;
-		break;
-	default:
-		break;
+		// The effect of ei is delayed by one instruction.
+		switch (gb->cpu.ime_enable_counter) {
+		case 1:
+			--gb->cpu.ime_enable_counter;
+			break;
+		case 0:
+			--gb->cpu.ime_enable_counter;
+			gb->cpu.ime = true;
+			break;
+		default:
+			break;
+		}
 	}
 
 	u64 cycles_elapsed = gb->cpu.cycle - cycle_pre;
 	timer_advance(gb, cycles_elapsed);
+}
+
+static bool interrupt_handle(Gameboy *gb) {
+	// - IF says which interrupts are requested, IE which are enabled
+	// e.g. VBLANK and TIMER enabled, SERIAL and TIMER requested -> only TIMER interrupt is executed
+	// - 0x1F because only bits 4-0 are used in both IF and IE; bits 7-5 are unused
+	const u8 gb_if = read8(gb, IF_ADDR);
+	const u8 gb_ef = read8(gb, IE_ADDR);
+	u8 pending = gb_if & gb_ef & 0x1F;
+
+	if (!pending || !gb->cpu.ime) return false;
+
+	// In order: VBLANK, STAT, TIMER, SERIAL, JOYPAD
+	static const u16 sources[] = {0x0040, 0x0048, 0x0050, 0x0058, 0x0060};
+
+	int interrupt = 0;
+	// - Get the source[] index of first pending interrupt to execute
+	// sources[] is in order of importance, so first hit is the one to execute
+	// - Even though it increments each time it's fine because only the most
+	// important bit is what matters for the comparison
+	while ((pending & (1u << interrupt)) == 0) ++interrupt;
+
+	gb->cpu.ime = false;
+
+	// Clear the IF bit of executed interrupt
+	write8(gb, IF_ADDR, gb_if & ~(1u << interrupt));
+
+	// Store the PC on stack and jump to the interrupt's source address
+	gb->cpu.regs[SP].full -= 2;
+	write16(gb, gb->cpu.regs[SP].full, gb->cpu.regs[PC].full);
+	gb->cpu.regs[PC].full = sources[interrupt];
+
+	gb->cpu.cycle += 5;
+
+	return true;
 }
 
 static void timer_advance(Gameboy *gb, const u64 cycles_elapsed) {

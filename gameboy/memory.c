@@ -90,14 +90,18 @@ static void write8(Gameboy *gb, const u16 addr, const u8 val) {
 		} else if (addr == DIV_ADDR) {
 			gb->memory.io_registers[addr - IO_REGS_ADDR] = 0;
 			gb->timer.div_elapsed = 0;
+		} else if (addr == IF_ADDR) {
+			gb->memory.io_registers[addr - IO_REGS_ADDR] = val;
+			gb->memory.io_registers[addr - IO_REGS_ADDR] |= 0xE0;
 		} else if (addr == TAC_ADDR) {
 			// Bits 7-3 read as ones and have no writeable function
 			gb->memory.io_registers[addr - IO_REGS_ADDR] = val | 0xF8;
 		}
-	} else if (addr < INT_ENABLE_ADDR) {
+	} else if (addr < IE_ADDR) {
 		gb->memory.hram[addr - HRAM_ADDR] = val;
 	} else {
-		assert(!"IE writes aren't implemented yet\n");
+		gb->memory.ie = val;
+		gb->memory.ie |= 0xE0;
 	}
 #endif
 }
@@ -165,10 +169,10 @@ static u8 read8(const Gameboy *gb, const u16 addr) {
 		// unnecessary drawing code and waiting for serial transfer to finish.
 		if ((addr == SERIAL_CONTROL) || (addr == LCD_Y)) return 0xFF;
 		return gb->memory.io_registers[addr - IO_REGS_ADDR];
-	} else if (addr < INT_ENABLE_ADDR)
+	} else if (addr < IE_ADDR)
 		return gb->memory.hram[addr - HRAM_ADDR];
 	else {
-		platform_error_log("IE reads aren't implemented yet\n");
+		return gb->memory.ie;
 	}
 	return 0;
 #endif
