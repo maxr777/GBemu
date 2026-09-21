@@ -90,7 +90,7 @@ typedef struct {
 	u8 oam[160];
 	u8 io_registers[128];
 	u8 hram[127];
-	bool display[160][144];
+	u8 display[160][144];
 } Memory;
 
 typedef struct {
