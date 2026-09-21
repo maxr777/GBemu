@@ -39,15 +39,16 @@ if not exist "%RAYLIB_LIB%" (
     if errorlevel 1 exit /b %errorlevel%
 )
 
-gcc -o GBemu.exe platform\desktop_gbemu.c -s -O2 ^
+rem Change -g to -s later on
+gcc -o GBemu.exe platform\desktop_gbemu.c -g -O2 ^
     -I"%RAYLIB%" ^
     "%RAYLIB_LIB%" ^
     -lopengl32 -lgdi32 -lwinmm ^
     -std=c11 -Wall
 if errorlevel 1 exit /b %errorlevel%
 
-gcc -o tests\cpu_test_runner.exe tests\cpu_test_runner.c -std=c11 -Wall
+gcc -o tests\cpu_test_runner.exe tests\cpu_test_runner.c -g -std=c11 -Wall
 if errorlevel 1 exit /b %errorlevel%
 
-gcc -o tests\test_runner.exe tests\test_runner.c -std=c11 -Wall
+gcc -o tests\test_runner.exe tests\test_runner.c -g -std=c11 -Wall
 if errorlevel 1 exit /b %errorlevel%
