@@ -108,154 +108,154 @@ typedef struct {
 
 // ==================== DECLARATIONS ====================
 
-void gameboy_initialize(const char *filepath, Gameboy *gb);
-void gameboy_step(Gameboy *gb);
+static void gameboy_initialize(const char *filepath, Gameboy *gb);
+static void gameboy_step(Gameboy *gb);
 
 // ==================== CPU ====================
 
-bool get_flag(const CPU *cpu, const int flag);
-void set_flag(CPU *cpu, const int flag, const bool value);
-void opcode_execute(const u8 opcode, Gameboy *gb);
+static bool get_flag(const CPU *cpu, const int flag);
+static void set_flag(CPU *cpu, const int flag, const bool value);
+static void opcode_execute(const u8 opcode, Gameboy *gb);
 
 // LOADS
-void ld_r8_r8(Gameboy *gb, u8 *dest, const u8 src);
-void ld_r8_n8(Gameboy *gb, u8 *dest, const u8 val);
-void ld_r16_n16(Gameboy *gb, u16 *dest, const u16 val);
-void ld_aHL_r8(Gameboy *gb, const u8 src);
-void ld_aHL_n8(Gameboy *gb, const u8 val);
-void ld_r8_aHL(Gameboy *gb, u8 *dest);
-void ld_a16_A(Gameboy *gb, const u16 addr);
-void ld_addr16_A(Gameboy *gb, const u16 addr);
-void ldh_addr16_A(Gameboy *gb, const u16 addr);
-void ldh_aC_A(Gameboy *gb);
-void ld_A_a16(Gameboy *gb, const u16 addr);
-void ld_A_addr16(Gameboy *gb, const u16 addr);
-void ldh_A_addr16(Gameboy *gb, const u16 addr);
-void ldh_A_aC(Gameboy *gb);
-void ld_aHLi_A(Gameboy *gb);
-void ld_aHLd_A(Gameboy *gb);
-void ld_A_aHLi(Gameboy *gb);
-void ld_A_aHLd(Gameboy *gb);
+static void ld_r8_r8(Gameboy *gb, u8 *dest, const u8 src);
+static void ld_r8_n8(Gameboy *gb, u8 *dest, const u8 val);
+static void ld_r16_n16(Gameboy *gb, u16 *dest, const u16 val);
+static void ld_aHL_r8(Gameboy *gb, const u8 src);
+static void ld_aHL_n8(Gameboy *gb, const u8 val);
+static void ld_r8_aHL(Gameboy *gb, u8 *dest);
+static void ld_a16_A(Gameboy *gb, const u16 addr);
+static void ld_addr16_A(Gameboy *gb, const u16 addr);
+static void ldh_addr16_A(Gameboy *gb, const u16 addr);
+static void ldh_aC_A(Gameboy *gb);
+static void ld_A_a16(Gameboy *gb, const u16 addr);
+static void ld_A_addr16(Gameboy *gb, const u16 addr);
+static void ldh_A_addr16(Gameboy *gb, const u16 addr);
+static void ldh_A_aC(Gameboy *gb);
+static void ld_aHLi_A(Gameboy *gb);
+static void ld_aHLd_A(Gameboy *gb);
+static void ld_A_aHLi(Gameboy *gb);
+static void ld_A_aHLd(Gameboy *gb);
 
 // 8-BIT ARITHMETIC
-void add_A_r8(Gameboy *gb, const u8 src);
-void add_A_aHL(Gameboy *gb);
-void add_A_n8(Gameboy *gb, const u8 val);
-void adc_A_r8(Gameboy *gb, const u8 src);
-void adc_A_aHL(Gameboy *gb);
-void adc_A_n8(Gameboy *gb, const u8 val);
-void sub_A_r8(Gameboy *gb, const u8 src);
-void sub_A_aHL(Gameboy *gb);
-void sub_A_n8(Gameboy *gb, const u8 val);
-void sbc_A_r8(Gameboy *gb, const u8 src);
-void sbc_A_aHL(Gameboy *gb);
-void sbc_A_n8(Gameboy *gb, const u8 val);
-void dec_r8(Gameboy *gb, u8 *dest);
-void dec_aHL(Gameboy *gb);
-void inc_r8(Gameboy *gb, u8 *dest);
-void inc_aHL(Gameboy *gb);
-void cp_A_r8(Gameboy *gb, const u8 src);
-void cp_A_aHL(Gameboy *gb);
-void cp_A_n8(Gameboy *gb, const u8 val);
+static void add_A_r8(Gameboy *gb, const u8 src);
+static void add_A_aHL(Gameboy *gb);
+static void add_A_n8(Gameboy *gb, const u8 val);
+static void adc_A_r8(Gameboy *gb, const u8 src);
+static void adc_A_aHL(Gameboy *gb);
+static void adc_A_n8(Gameboy *gb, const u8 val);
+static void sub_A_r8(Gameboy *gb, const u8 src);
+static void sub_A_aHL(Gameboy *gb);
+static void sub_A_n8(Gameboy *gb, const u8 val);
+static void sbc_A_r8(Gameboy *gb, const u8 src);
+static void sbc_A_aHL(Gameboy *gb);
+static void sbc_A_n8(Gameboy *gb, const u8 val);
+static void dec_r8(Gameboy *gb, u8 *dest);
+static void dec_aHL(Gameboy *gb);
+static void inc_r8(Gameboy *gb, u8 *dest);
+static void inc_aHL(Gameboy *gb);
+static void cp_A_r8(Gameboy *gb, const u8 src);
+static void cp_A_aHL(Gameboy *gb);
+static void cp_A_n8(Gameboy *gb, const u8 val);
 
 // 16-BIT ARITHMETIC
-void add_HL_r16(Gameboy *gb, const u16 src);
-void dec_r16(Gameboy *gb, u16 *dest);
-void inc_r16(Gameboy *gb, u16 *dest);
+static void add_HL_r16(Gameboy *gb, const u16 src);
+static void dec_r16(Gameboy *gb, u16 *dest);
+static void inc_r16(Gameboy *gb, u16 *dest);
 
 // BITWISE LOGIC
-void and_A_r8(Gameboy *gb, const u8 src);
-void and_A_aHL(Gameboy *gb);
-void and_A_n8(Gameboy *gb, const u8 val);
-void or_A_r8(Gameboy *gb, const u8 src);
-void or_A_aHL(Gameboy *gb);
-void or_A_n8(Gameboy *gb, const u8 val);
-void cpl(Gameboy *gb);
-void xor_A_r8(Gameboy *gb, const u8 src);
-void xor_A_aHL(Gameboy *gb);
-void xor_A_n8(Gameboy *gb, const u8 val);
+static void and_A_r8(Gameboy *gb, const u8 src);
+static void and_A_aHL(Gameboy *gb);
+static void and_A_n8(Gameboy *gb, const u8 val);
+static void or_A_r8(Gameboy *gb, const u8 src);
+static void or_A_aHL(Gameboy *gb);
+static void or_A_n8(Gameboy *gb, const u8 val);
+static void cpl(Gameboy *gb);
+static void xor_A_r8(Gameboy *gb, const u8 src);
+static void xor_A_aHL(Gameboy *gb);
+static void xor_A_n8(Gameboy *gb, const u8 val);
 
 // BIT FLAGS
-void bit_u3_r8(Gameboy *gb, const int bit_num, const u8 src);
-void bit_u3_aHL(Gameboy *gb, const int bit_num);
-void res_u3_r8(Gameboy *gb, const int bit_num, u8 *src);
-void res_u3_aHL(Gameboy *gb, const int bit_num);
-void set_u3_r8(Gameboy *gb, const int bit_num, u8 *src);
-void set_u3_aHL(Gameboy *gb, const int bit_num);
+static void bit_u3_r8(Gameboy *gb, const int bit_num, const u8 src);
+static void bit_u3_aHL(Gameboy *gb, const int bit_num);
+static void res_u3_r8(Gameboy *gb, const int bit_num, u8 *src);
+static void res_u3_aHL(Gameboy *gb, const int bit_num);
+static void set_u3_r8(Gameboy *gb, const int bit_num, u8 *src);
+static void set_u3_aHL(Gameboy *gb, const int bit_num);
 
 // BIT SHIFTS
-void rla(Gameboy *gb);
-void rlca(Gameboy *gb);
-void rra(Gameboy *gb);
-void rrca(Gameboy *gb);
-void rlc_r8(Gameboy *gb, u8 *src);
-void rlc_aHL(Gameboy *gb);
-void rrc_r8(Gameboy *gb, u8 *src);
-void rrc_aHL(Gameboy *gb);
-void rl_r8(Gameboy *gb, u8 *src);
-void rl_aHL(Gameboy *gb);
-void rr_r8(Gameboy *gb, u8 *src);
-void rr_aHL(Gameboy *gb);
-void sla_r8(Gameboy *gb, u8 *src);
-void sla_aHL(Gameboy *gb);
-void sra_r8(Gameboy *gb, u8 *src);
-void sra_aHL(Gameboy *gb);
-void swap_r8(Gameboy *gb, u8 *src);
-void swap_aHL(Gameboy *gb);
-void srl_r8(Gameboy *gb, u8 *src);
-void srl_aHL(Gameboy *gb);
+static void rla(Gameboy *gb);
+static void rlca(Gameboy *gb);
+static void rra(Gameboy *gb);
+static void rrca(Gameboy *gb);
+static void rlc_r8(Gameboy *gb, u8 *src);
+static void rlc_aHL(Gameboy *gb);
+static void rrc_r8(Gameboy *gb, u8 *src);
+static void rrc_aHL(Gameboy *gb);
+static void rl_r8(Gameboy *gb, u8 *src);
+static void rl_aHL(Gameboy *gb);
+static void rr_r8(Gameboy *gb, u8 *src);
+static void rr_aHL(Gameboy *gb);
+static void sla_r8(Gameboy *gb, u8 *src);
+static void sla_aHL(Gameboy *gb);
+static void sra_r8(Gameboy *gb, u8 *src);
+static void sra_aHL(Gameboy *gb);
+static void swap_r8(Gameboy *gb, u8 *src);
+static void swap_aHL(Gameboy *gb);
+static void srl_r8(Gameboy *gb, u8 *src);
+static void srl_aHL(Gameboy *gb);
 
 // JUMPS
-void call_n16(Gameboy *gb, const u16 addr);
-void call_cc_n16(Gameboy *gb, const int flag, const bool flag_state, const u16 addr);
-void jp_n16(Gameboy *gb, const u16 addr);
-void jp_cc_n16(Gameboy *gb, const int flag, const bool flag_state, const u16 addr);
-void jp_aHL(Gameboy *gb);
-void jr_n16(Gameboy *gb, const i8 offset);
-void jr_cc_n16(Gameboy *gb, const int flag, const bool flag_state, const i8 offset);
-void rst(Gameboy *gb, const u8 vec);
-void ret(Gameboy *gb);
-void ret_cc(Gameboy *gb, const int flag, const bool flag_state);
-void reti(Gameboy *gb);
+static void call_n16(Gameboy *gb, const u16 addr);
+static void call_cc_n16(Gameboy *gb, const int flag, const bool flag_state, const u16 addr);
+static void jp_n16(Gameboy *gb, const u16 addr);
+static void jp_cc_n16(Gameboy *gb, const int flag, const bool flag_state, const u16 addr);
+static void jp_aHL(Gameboy *gb);
+static void jr_n16(Gameboy *gb, const i8 offset);
+static void jr_cc_n16(Gameboy *gb, const int flag, const bool flag_state, const i8 offset);
+static void rst(Gameboy *gb, const u8 vec);
+static void ret(Gameboy *gb);
+static void ret_cc(Gameboy *gb, const int flag, const bool flag_state);
+static void reti(Gameboy *gb);
 
 // CARRY FLAG INSTRUCTIONS
-void ccf(Gameboy *gb);
-void scf(Gameboy *gb);
+static void ccf(Gameboy *gb);
+static void scf(Gameboy *gb);
 
 // STACK INSTRUCTIONS
-void pop_r16(Gameboy *gb, u16 *src);
-void pop_AF(Gameboy *gb);
-void push_r16(Gameboy *gb, const u16 src);
-void push_AF(Gameboy *gb);
-void ld_addr16_SP(Gameboy *gb, const u16 addr);
-void ld_HL_SPe8(Gameboy *gb, const i8 val);
-void ld_SP_HL(Gameboy *gb);
-void add_SP_n8(Gameboy *gb, const i8 val);
+static void pop_r16(Gameboy *gb, u16 *src);
+static void pop_AF(Gameboy *gb);
+static void push_r16(Gameboy *gb, const u16 src);
+static void push_AF(Gameboy *gb);
+static void ld_addr16_SP(Gameboy *gb, const u16 addr);
+static void ld_HL_SPe8(Gameboy *gb, const i8 val);
+static void ld_SP_HL(Gameboy *gb);
+static void add_SP_n8(Gameboy *gb, const i8 val);
 
 // INTERRUPTS
-void di(Gameboy *gb);
-void ei(Gameboy *gb);
-void halt(Gameboy *gb);
+static void di(Gameboy *gb);
+static void ei(Gameboy *gb);
+static void halt(Gameboy *gb);
 
 // MISC
-void daa(Gameboy *gb);
-void nop(Gameboy *gb);
-void stop_n8(Gameboy *gb, const u8 val);
+static void daa(Gameboy *gb);
+static void nop(Gameboy *gb);
+static void stop_n8(Gameboy *gb, const u8 val);
 
 // ==================== MEMORY ====================
 
-void write16(Gameboy *gb, const u16 addr, const u16 val);
-void write8(Gameboy *gb, const u16 addr, const u8 val);
-void rom_write(Gameboy *gb, const u16 addr, const u8 val);
-void mbc1_write(Gameboy *gb, const u16 addr, const u8 val);
+static void write16(Gameboy *gb, const u16 addr, const u16 val);
+static void write8(Gameboy *gb, const u16 addr, const u8 val);
+static void rom_write(Gameboy *gb, const u16 addr, const u8 val);
+static void mbc1_write(Gameboy *gb, const u16 addr, const u8 val);
 
-u16 read16(const Gameboy *gb, const u16 addr);
-u8 read8(const Gameboy *gb, const u16 addr);
-u8 rom_read(const Gameboy *gb, const u16 addr);
-u8 mbc1_read(const Gameboy *gb, const u16 addr);
+static u16 read16(const Gameboy *gb, const u16 addr);
+static u8 read8(const Gameboy *gb, const u16 addr);
+static u8 rom_read(const Gameboy *gb, const u16 addr);
+static u8 mbc1_read(const Gameboy *gb, const u16 addr);
 
 // ==================== TIMERS ====================
 
-int tac_cycles_get(const u8 tac);
-bool tac_enable_get(const u8 tac);
-void timer_advance(Gameboy *gb, const u64 cycles_elapsed);
+static int tac_cycles_get(const u8 tac);
+static bool tac_enable_get(const u8 tac);
+static void timer_advance(Gameboy *gb, const u64 cycles_elapsed);

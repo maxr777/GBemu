@@ -11,7 +11,7 @@
 #define IO_FILL	  0x55
 #define HRAM_FILL 0x66
 
-void test_memory_read(void) {
+static void test_memory_read(void) {
 	puts("Test: Memory map reads");
 	fflush(stdout);
 
@@ -130,7 +130,7 @@ void test_memory_read(void) {
 	free(gb.rom.game_rom);
 }
 
-void test_memory_write(void) {
+static void test_memory_write(void) {
 	puts("Test: Memory map writes");
 	fflush(stdout);
 

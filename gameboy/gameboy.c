@@ -29,7 +29,7 @@ static u8 BOOT_ROM[] = {
     0x4d, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x3e, 0x01, 0xe0, 0x50};
 
-int tac_cycles_get(const u8 tac) {
+static int tac_cycles_get(const u8 tac) {
 	switch (tac & 0x03) {
 	case 0x00:
 		return TAC_00_CYCLES;
@@ -44,11 +44,11 @@ int tac_cycles_get(const u8 tac) {
 	return 0;
 }
 
-bool tac_enable_get(const u8 tac) {
+static bool tac_enable_get(const u8 tac) {
 	return tac & 0x04;
 }
 
-void gameboy_initialize(const char *filepath, Gameboy *gb) {
+static void gameboy_initialize(const char *filepath, Gameboy *gb) {
 	// Deterministic baseline: real WRAM/HRAM and wave RAM are undefined on power-up.
 	gb_memset(gb, 0, sizeof(*gb));
 
@@ -98,7 +98,7 @@ void gameboy_initialize(const char *filepath, Gameboy *gb) {
 	io[OBJ_PALETTE1_DATA - IO_REGS_ADDR] = 0xFF;
 }
 
-void opcode_execute(const u8 opcode, Gameboy *gb) {
+static void opcode_execute(const u8 opcode, Gameboy *gb) {
 	if (gb->cpu.prefix) {
 		// ==================== PREFIX ====================
 		switch (opcode) {
@@ -1690,7 +1690,7 @@ void opcode_execute(const u8 opcode, Gameboy *gb) {
 	}
 }
 
-void gameboy_step(Gameboy *gb) {
+static void gameboy_step(Gameboy *gb) {
 	u64 cycle_pre = gb->cpu.cycle;
 
 	u8 opcode = read8(gb, gb->cpu.regs[PC].full);
@@ -1700,7 +1700,7 @@ void gameboy_step(Gameboy *gb) {
 	timer_advance(gb, cycles_elapsed);
 }
 
-void timer_advance(Gameboy *gb, const u64 cycles_elapsed) {
+static void timer_advance(Gameboy *gb, const u64 cycles_elapsed) {
 	u8 *div = &gb->memory.io_registers[DIV_ADDR - IO_REGS_ADDR];
 	u64 *div_timer = &gb->timer.div_elapsed;
 

@@ -42,7 +42,7 @@ const char *tests[] = {
 
 #define TEST_COUNT (sizeof(tests) / sizeof(tests[0]))
 
-bool mooneye_passed(Gameboy *gb) {
+static bool mooneye_passed(Gameboy *gb) {
 	return gb->cpu.regs[BC].high == 3 &&
 	       gb->cpu.regs[BC].low == 5 &&
 	       gb->cpu.regs[DE].high == 8 &&
@@ -60,7 +60,7 @@ static bool mooneye_failed(const Gameboy *gb) {
 	       gb->cpu.regs[HL].low == 0x42;
 }
 
-void test_mooneye() {
+static void test_mooneye() {
 	for (int i = 0; i < TEST_COUNT; ++i) {
 		char path[256];
 		snprintf(path, sizeof(path), "%s%s.gb", MOONEYE_PATH, tests[i]);

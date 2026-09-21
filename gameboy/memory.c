@@ -8,17 +8,17 @@
  * implementing mbc1_write()
  */
 
-void write16(Gameboy *gb, const u16 addr, const u16 val) {
+static void write16(Gameboy *gb, const u16 addr, const u16 val) {
 	write8(gb, addr, val);
 	write8(gb, addr + 1, val >> 8);
 }
 
-u16 read16(const Gameboy *gb, const u16 addr) {
+static u16 read16(const Gameboy *gb, const u16 addr) {
 	return read8(gb, addr) | (read8(gb, addr + 1) << 8);
 }
 
 // addresses: https://gbdev.io/pandocs/MBC1.html
-void mbc1_write(Gameboy *gb, const u16 addr, const u8 val) {
+static void mbc1_write(Gameboy *gb, const u16 addr, const u8 val) {
 	if (addr < 0x2000) { // RAM enable
 		if ((val & 0x0F) == 0x0A)
 			gb->mbc1.ram_enable = true;
@@ -43,7 +43,7 @@ void mbc1_write(Gameboy *gb, const u16 addr, const u8 val) {
 	}
 }
 
-void rom_write(Gameboy *gb, const u16 addr, const u8 val) {
+static void rom_write(Gameboy *gb, const u16 addr, const u8 val) {
 	switch (gb->rom.cartridge_header.cartridge_type) {
 	case 0x00:
 		assert(!"Writing to ROM with MCB0 is prohibited");
@@ -59,7 +59,7 @@ void rom_write(Gameboy *gb, const u16 addr, const u8 val) {
 	}
 }
 
-void write8(Gameboy *gb, const u16 addr, const u8 val) {
+static void write8(Gameboy *gb, const u16 addr, const u8 val) {
 #ifdef CPU_TEST
 	gb->memory.test_memory[addr] = val;
 #else
@@ -102,7 +102,7 @@ void write8(Gameboy *gb, const u16 addr, const u8 val) {
 #endif
 }
 
-u8 mbc1_read(const Gameboy *gb, const u16 addr) {
+static u8 mbc1_read(const Gameboy *gb, const u16 addr) {
 	assert(addr < WRAM_0_ADDR && !(addr >= VRAM_ADDR && addr < WRAM_0_ADDR));
 
 	if (addr < ROM_BANK_N_ADDR) { // ROM bank X0
@@ -120,7 +120,7 @@ u8 mbc1_read(const Gameboy *gb, const u16 addr) {
 	}
 }
 
-u8 rom_read(const Gameboy *gb, const u16 addr) {
+static u8 rom_read(const Gameboy *gb, const u16 addr) {
 	if (gb->rom.boot_rom_enabled && addr <= 0x00FF) return gb->rom.boot_rom[addr];
 
 	switch (gb->rom.cartridge_header.cartridge_type) {
@@ -136,7 +136,7 @@ u8 rom_read(const Gameboy *gb, const u16 addr) {
 	}
 }
 
-u8 read8(const Gameboy *gb, const u16 addr) {
+static u8 read8(const Gameboy *gb, const u16 addr) {
 #ifdef CPU_TEST
 	return gb->memory.test_memory[addr];
 #else

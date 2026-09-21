@@ -6,11 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-void platform_serial_print(const char ch) {
+static void platform_serial_print(const char ch) {
 	printf("%c", ch);
 }
 
-void platform_error_log(const char *msg) {
+static void platform_error_log(const char *msg) {
 	fprintf(stderr, "%s", msg);
 }
 
@@ -1030,7 +1030,7 @@ static const char *opcode_name(const u8 opcode, const bool prefixed) {
 	}
 }
 
-void platform_debug_log(const Gameboy *gb) {
+static void platform_debug_log(const Gameboy *gb) {
 	const u8 opcode = read8(gb, gb->cpu.regs[PC].full);
 	const char *instr = opcode_name(opcode, gb->cpu.prefix);
 
@@ -1043,7 +1043,7 @@ void platform_debug_log(const Gameboy *gb) {
 	       (gb->cpu.regs[AF].low & 0x10) ? 'C' : '-');
 }
 
-bool cartridge_type_is_correct(const u8 type) {
+static bool cartridge_type_is_correct(const u8 type) {
 	switch (type) {
 	case 0x00:
 	case 0x01:
@@ -1079,7 +1079,7 @@ bool cartridge_type_is_correct(const u8 type) {
 	}
 }
 
-void platform_game_load(const char *filepath, ROM *rom) {
+static void platform_game_load(const char *filepath, ROM *rom) {
 	memset(rom, 0, sizeof(*rom));
 
 	FILE *game_file = fopen(filepath, "rb");

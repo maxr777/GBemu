@@ -22,7 +22,7 @@ typedef struct {
 	u8 *mem_val;
 } TestState;
 
-void test_state_print(TestState *test) {
+static void test_state_print(TestState *test) {
 	printf("a: 0x%02x\nb: 0x%02x\nc: 0x%02x\nd: 0x%02x\ne: 0x%02x\nf: 0x%02x\nh: 0x%02x\nl: 0x%02x\npc: 0x%02x\nsp: 0x%02x\n",
 	       test->a, test->b, test->c, test->d, test->e, test->f, test->h, test->l, test->pc, test->sp);
 
@@ -31,7 +31,7 @@ void test_state_print(TestState *test) {
 	}
 }
 
-void test_cpu() {
+static void test_cpu() {
 	Gameboy gb = {};
 
 	for (int i = 0x00; i <= 0xFF; ++i) {
