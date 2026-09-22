@@ -1750,32 +1750,49 @@ static bool interrupt_handle(Gameboy *gb) {
 	// - IF says which interrupts are requested, IE which are enabled
 	// e.g. VBLANK and TIMER enabled, SERIAL and TIMER requested -> only TIMER interrupt is executed
 	// - 0x1F because only bits 4-0 are used in both IF and IE; bits 7-5 are unused
-	const u8 gb_if = read8(gb, IF_ADDR);
-	const u8 gb_ef = read8(gb, IE_ADDR);
+	u8 gb_if = read8(gb, IF_ADDR);
+	u8 gb_ef = read8(gb, IE_ADDR);
 	u8 pending = gb_if & gb_ef & 0x1F;
 
 	if (!pending || !gb->cpu.ime) return false;
 
-	// In order: VBLANK, STAT, TIMER, SERIAL, JOYPAD
-	static const u16 sources[] = {0x0040, 0x0048, 0x0050, 0x0058, 0x0060};
-
-	int interrupt = 0;
-	// - Get the source[] index of first pending interrupt to execute
-	// sources[] is in order of importance, so first hit is the one to execute
-	// - Even though it increments each time it's fine because only the most
-	// important bit is what matters for the comparison
-	while ((pending & (1u << interrupt)) == 0) ++interrupt;
-
+	// "When an interrupt handler is executed: Disables interrupts before calling the interrupt handler"
 	gb->cpu.ime_pending = false;
 	gb->cpu.ime = false;
 
-	// Clear the IF bit of executed interrupt
-	write8(gb, IF_ADDR, gb_if & ~(1u << interrupt));
-
 	// Store the PC on stack and jump to the interrupt's source address
-	gb->cpu.regs[SP].full -= 2;
-	write16(gb, gb->cpu.regs[SP].full, gb->cpu.regs[PC].full);
-	gb->cpu.regs[PC].full = sources[interrupt];
+	// Need to do it in 2 parts, though - first the high byte then the low byte
+	// It needs to be so because one write can overwrite IE, so there's a need to check for it
+	--gb->cpu.regs[SP].full;
+	write8(gb, gb->cpu.regs[SP].full, gb->cpu.regs[PC].high);
+
+	// In order: VBLANK, STAT, TIMER, SERIAL, JOYPAD
+	static const u16 sources[] = {0x0040, 0x0048, 0x0050, 0x0058, 0x0060};
+
+	// Since a write can overwrite IE, need to check it again
+	gb_if = read8(gb, IF_ADDR);
+	gb_ef = read8(gb, IE_ADDR);
+	pending = gb_if & gb_ef & 0x1F;
+
+	int interrupt = 0;
+	if (pending) {
+		// - Get the source[] index of first pending interrupt to execute
+		// sources[] is in order of importance, so first hit is the one to execute
+		// - Even though it increments each time it's fine because only the most
+		// important bit is what matters for the comparison
+		while ((pending & (1u << interrupt)) == 0) ++interrupt;
+
+		// Clear the IF bit of executed interrupt
+		write8(gb, IF_ADDR, gb_if & ~(1u << interrupt));
+	}
+
+	--gb->cpu.regs[SP].full;
+	write8(gb, gb->cpu.regs[SP].full, gb->cpu.regs[PC].low);
+
+	// "The written value is $02, which clears the INTR_TIMER bit and cancels the
+	// interrupt dispatch. PC is set to $0000 instead of the normal jump address."
+	// - "acceptance/interrupts/ie_push", Round 1
+	gb->cpu.regs[PC].full = pending ? sources[interrupt] : 0x0000;
 
 	gb->cpu.cycle += 5;
 

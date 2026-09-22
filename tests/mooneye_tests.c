@@ -16,7 +16,7 @@ const char *tests[] = {
     // TODO: This one relies on LY reads
     // "acceptance/di_timing-GS",
     "acceptance/intr_timing",
-    // "acceptance/interrupts/ie_push",
+    "acceptance/interrupts/ie_push",
     // "acceptance/reti_timing",
     // "acceptance/reti_intr_timing",
 

@@ -46,7 +46,7 @@ static void mbc1_write(Gameboy *gb, const u16 addr, const u8 val) {
 static void rom_write(Gameboy *gb, const u16 addr, const u8 val) {
 	switch (gb->rom.cartridge_header.cartridge_type) {
 	case 0x00:
-		assert(!"Writing to ROM with MCB0 is prohibited");
+		// This does nothing
 		break;
 	case 0x01:
 	case 0x02:
