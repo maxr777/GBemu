@@ -1154,22 +1154,30 @@ static void add_SP_n8(Gameboy *gb, const i8 val) {
 
 static void di(Gameboy *gb) {
 	gb->cpu.ime = false;
+	gb->cpu.ime_pending = false;
 
 	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 1;
 }
 
 static void ei(Gameboy *gb) {
-	gb->cpu.ime_enable_counter = 1;
+	gb->cpu.ime_pending = true;
 
 	gb->cpu.regs[PC].full += 1;
 	gb->cpu.cycle += 1;
 }
 
 static void halt(Gameboy *gb) {
-	platform_error_log("halt() is a stub - TODO implementation\n");
+	// See interrupt_handle() for explanation on the ANDs
+	bool pending = gb->memory.ie & gb->memory.io_registers[IF_ADDR - IO_REGS_ADDR] & 0x1F;
+
+	// !IME && pending: The CPU continues execution after the HALT, but the byte after it is
+	// read twice in a row (PC is not incremented, due to a hardware bug).
+	if (!gb->cpu.ime && pending) gb->cpu.halt_bug = true;
+	else gb->cpu.halted = true;
 
 	gb->cpu.regs[PC].full += 1;
+	gb->cpu.cycle += 1;
 }
 
 // ================ MISC ================

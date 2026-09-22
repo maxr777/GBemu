@@ -63,7 +63,6 @@ static void gameboy_initialize(const char *filepath, Gameboy *gb) {
 	gb->rom.current_rom_bank = 1;
 	gb->mbc1.first_rom_bank_reg = 1;
 	// RAM bank 0, RAM disabled, and simple MBC1 banking mode remain zero.
-	gb->cpu.ime_enable_counter = -1;
 
 	u8 *io = gb->memory.io_registers;
 	io[JOYPAD_INPUT - IO_REGS_ADDR] = 0xCF;	  // No buttons pressed; both groups selected.
@@ -1692,22 +1691,54 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 
 static void gameboy_step(Gameboy *gb) {
 	u64 cycle_pre = gb->cpu.cycle;
+	bool ime_pending_old = gb->cpu.ime_pending;
+	// Used for HALT handling; See interrupt_handle() for explanation on the ANDs
+	bool int_pending = gb->memory.ie & gb->memory.io_registers[IF_ADDR - IO_REGS_ADDR] & 0x1F;
 
-	if (!interrupt_handle(gb)) {
-		u8 opcode = read8(gb, gb->cpu.regs[PC].full);
-		opcode_execute(opcode, gb);
+	// HALT handling, look at halt() for more details
+	if (gb->cpu.halted && !int_pending) {
+		/*
+		 * If the IME flag is not set, and no interrupts are pending (halt = true, halt_bug = false):
+		 * As soon as an interrupt becomes pending, the CPU resumes execution. This is like
+		 * the above (note: refering to the else case), except that the handler is not called.
+		 */
+		++gb->cpu.cycle;
+	} else {
+		/*
+		 * If the IME flag is set (halt = true, halt_bug = false):
+		 * The CPU enters low-power mode until after an interrupt is about to be serviced.
+		 * The handler is executed normally, and the CPU resumes execution after the HALT when that returns.
+		 */
+		gb->cpu.halted = false;
+		if (!interrupt_handle(gb)) {
+			u8 opcode = read8(gb, gb->cpu.regs[PC].full);
+			/*
+			 * If the IME flag is not set, and some interrupt is pending (halt = false, halt_bug = true):
+			 * The CPU continues execution after the HALT, but the byte after it is
+			 * read twice in a row (PC is not incremented, due to a hardware bug).
+			 */
+			if (gb->cpu.halt_bug) {
+				gb->cpu.halt_bug = false;
+				--gb->cpu.regs[PC].full;
+			}
 
-		// The effect of ei is delayed by one instruction.
-		switch (gb->cpu.ime_enable_counter) {
-		case 1:
-			--gb->cpu.ime_enable_counter;
-			break;
-		case 0:
-			--gb->cpu.ime_enable_counter;
-			gb->cpu.ime = true;
-			break;
-		default:
-			break;
+			opcode_execute(opcode, gb);
+
+			/*
+			 * "The effect of ei is delayed by one instruction. This means that
+			 * ei followed immediately by di does not allow any interrupts between them."
+			 *
+			 * INSTRUCTIONS     PENDING_OLD     PENDING_NEW     RESULT
+			 * EI; DI           true            false           IME stays off
+			 * EI; EI           true            true            First EI takes effect
+			 * EI; NOP          true            true            EI takes effect
+			 *
+			 * NOTE: EI; EI does not queue another interrupt, only 1 interrupt runs
+			 */
+			if (ime_pending_old && gb->cpu.ime_pending) {
+				gb->cpu.ime = true;
+				gb->cpu.ime_pending = false;
+			}
 		}
 	}
 
@@ -1735,6 +1766,7 @@ static bool interrupt_handle(Gameboy *gb) {
 	// important bit is what matters for the comparison
 	while ((pending & (1u << interrupt)) == 0) ++interrupt;
 
+	gb->cpu.ime_pending = false;
 	gb->cpu.ime = false;
 
 	// Clear the IF bit of executed interrupt

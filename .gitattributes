@@ -1,0 +1,7 @@
+# Bundled third-party code; keep it out of GitHub language statistics.
+tests/mooneye-tests/** linguist-vendored
+external/** linguist-vendored
+
+# Keep shell scripts runnable across platforms and ROM images byte-for-byte.
+*.sh text eol=lf
+*.gb binary

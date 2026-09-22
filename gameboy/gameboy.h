@@ -39,7 +39,9 @@ typedef struct {
 	u64 cycle;
 	bool prefix;
 	bool ime;
-	int ime_enable_counter;
+	bool ime_pending;
+	bool halted;
+	bool halt_bug;
 } CPU;
 
 typedef struct {
