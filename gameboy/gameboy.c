@@ -1799,6 +1799,19 @@ static bool interrupt_handle(Gameboy *gb) {
 	return true;
 }
 
+/*
+ * TODO: There is really only one timer, and DIV is the timer's upper 8 bits - model it like that
+ * 1. Remove TimerCounters (gameboy.h:102)
+ * 2. Think about how to connect DIV in io[] and the global timer
+ * 3. Change %= cycles_elapsed to CYCLES_PER_DIV (redundant with universal timer?)
+ * 4. Also, use a while loop for tac (e.g. TAC_01 is 16 cycles per increment,
+ *    some instructions are longer than that) (redundant with universal timer?)
+ * 5. The timer should also tick before memory read and writes. For example, let's say opcode fetch
+ *    takes up 1 cycle and fetching the operand byte takes another cycle - then, if we read DIV, we
+ *    need the timer to already be advanced by those operations. If we just advance the timer at the
+ *    end of each instructions (e.g. +3 at the end of it), the DIV that we read might be incorrect.
+ * 6. DIV is kinda a fake register, writes to it should change the underlying timer (e.g. return timer >> 8;)
+ */
 static void timer_advance(Gameboy *gb, const u64 cycles_elapsed) {
 	u8 *div = &gb->memory.io_registers[DIV_ADDR - IO_REGS_ADDR];
 	u64 *div_timer = &gb->timer.div_elapsed;

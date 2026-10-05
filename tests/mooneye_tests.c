@@ -17,8 +17,9 @@ const char *tests[] = {
     // "acceptance/di_timing-GS",
     "acceptance/intr_timing",
     "acceptance/interrupts/ie_push",
+    // TODO: This one relies on LY reads
     // "acceptance/reti_timing",
-    // "acceptance/reti_intr_timing",
+    "acceptance/reti_intr_timing",
 
     // HALT behavior is coupled to pending interrupts and IME.
     // "acceptance/halt_ime0_ei",
@@ -29,7 +30,7 @@ const char *tests[] = {
     // Divider and timer behavior
     "acceptance/div_timing",
     "acceptance/timer/tim01",
-    // "acceptance/timer/tim10",
+    "acceptance/timer/tim10",
     // "acceptance/timer/tim11",
     // "acceptance/timer/tim00",
     "acceptance/timer/div_write",
