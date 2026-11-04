@@ -29,35 +29,18 @@ static u8 BOOT_ROM[] = {
     0x4d, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
     0x3e, 0x01, 0xe0, 0x50};
 
-static int tac_cycles_get(const u8 tac) {
-	switch (tac & 0x03) {
-	case 0x00:
-		return TAC_00_CYCLES;
-	case 0x01:
-		return TAC_01_CYCLES;
-	case 0x02:
-		return TAC_10_CYCLES;
-	case 0x03:
-		return TAC_11_CYCLES;
-	}
-
-	return 0;
-}
-
-static bool tac_enable_get(const u8 tac) {
-	return tac & 0x04;
-}
-
 static void gameboy_initialize(const char *filepath, Gameboy *gb) {
 	// Deterministic baseline: real WRAM/HRAM and wave RAM are undefined on power-up.
 	gb_memset(gb, 0, sizeof(*gb));
 
 	platform_game_load(filepath, &gb->rom);
 
-	// DMG power-on state, BEFORE the boot ROM runs at PC = 0x0000.
-	// The boot ROM establishes SP, CPU registers, LCDC, BGP, and sound settings.
-	// Do not copy the post-boot (PC = 0x0100) values here.
-	// https://gbdev.io/pandocs/Power_Up_Sequence.html
+	/*
+	 * DMG power-on state, BEFORE the boot ROM runs at PC = 0x0000.
+	 * The boot ROM establishes SP, CPU registers, LCDC, BGP, and sound settings.
+	 * Do not copy the post-boot (PC = 0x0100) values here.
+	 * https://gbdev.io/pandocs/Power_Up_Sequence.html
+	 */
 	gb->rom.boot_rom = BOOT_ROM;
 	gb->rom.boot_rom_enabled = true;
 	gb->rom.current_rom_bank = 1;
@@ -72,9 +55,11 @@ static void gameboy_initialize(const char *filepath, Gameboy *gb) {
 	io[LCD_STATUS - IO_REGS_ADDR] = 0x80;	  // LCD off; bit 7 reads as one.
 	// DIV, TIMA, TMA, and LCDC start at zero in this implementation.
 
-	// Sound is powered off. These are read-as-one bits, not enabled features.
-	// TODO: Enforce read masks in read8() when implementing each device so
-	// subsequent writes cannot clear them. Initialization alone is insufficient.
+	/*
+	 * Sound is powered off. These are read-as-one bits, not enabled features.
+	 * TODO: Enforce read masks in cpu_read8() when implementing each device so
+	 * subsequent writes cannot clear them. Initialization alone is insufficient.
+	 */
 	io[CH1_SWEEP - IO_REGS_ADDR] = 0x80;
 	io[CH1_TIMER - IO_REGS_ADDR] = 0x3F;
 	io[CH1_PERIOD_LOW - IO_REGS_ADDR] = 0xFF;
@@ -872,7 +857,6 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 
 		default:
 			gb->cpu.regs[PC].full += 1;
-			gb->cpu.cycle += 1;
 			break;
 		}
 		gb->cpu.prefix = false;
@@ -883,7 +867,7 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			nop(gb);
 			break;
 		case 0x01: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_r16_n16(gb, &gb->cpu.regs[BC].full, n16);
 		} break;
 		case 0x02:
@@ -899,14 +883,14 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			dec_r8(gb, &gb->cpu.regs[BC].high);
 			break;
 		case 0x06: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[BC].high, n8);
 		} break;
 		case 0x07:
 			rlca(gb);
 			break;
 		case 0x08: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_addr16_SP(gb, n16);
 		} break;
 		case 0x09:
@@ -925,18 +909,18 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			dec_r8(gb, &gb->cpu.regs[BC].low);
 			break;
 		case 0x0E: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[BC].low, n8);
 		} break;
 		case 0x0F:
 			rrca(gb);
 			break;
 		case 0x10: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			stop_n8(gb, n8);
 		} break;
 		case 0x11: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_r16_n16(gb, &gb->cpu.regs[DE].full, n16);
 		} break;
 		case 0x12:
@@ -952,14 +936,14 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			dec_r8(gb, &gb->cpu.regs[DE].high);
 			break;
 		case 0x16: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[DE].high, n8);
 		} break;
 		case 0x17:
 			rla(gb);
 			break;
 		case 0x18: {
-			i8 offset = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
+			i8 offset = (i8)cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			jr_n16(gb, offset);
 			break;
 		}
@@ -979,19 +963,19 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			dec_r8(gb, &gb->cpu.regs[DE].low);
 			break;
 		case 0x1E: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[DE].low, n8);
 		} break;
 		case 0x1F:
 			rra(gb);
 			break;
 		case 0x20: {
-			i8 offset = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
+			i8 offset = (i8)cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			jr_cc_n16(gb, Z, false, offset);
 			break;
 		}
 		case 0x21: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_r16_n16(gb, &gb->cpu.regs[HL].full, n16);
 		} break;
 		case 0x22:
@@ -1007,14 +991,14 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			dec_r8(gb, &gb->cpu.regs[HL].high);
 			break;
 		case 0x26: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[HL].high, n8);
 		} break;
 		case 0x27:
 			daa(gb);
 			break;
 		case 0x28: {
-			i8 offset = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
+			i8 offset = (i8)cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			jr_cc_n16(gb, Z, true, offset);
 			break;
 		}
@@ -1034,19 +1018,19 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			dec_r8(gb, &gb->cpu.regs[HL].low);
 			break;
 		case 0x2E: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[HL].low, n8);
 		} break;
 		case 0x2F:
 			cpl(gb);
 			break;
 		case 0x30: {
-			i8 offset = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
+			i8 offset = (i8)cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			jr_cc_n16(gb, C, false, offset);
 			break;
 		}
 		case 0x31: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_r16_n16(gb, &gb->cpu.regs[SP].full, n16);
 		} break;
 		case 0x32:
@@ -1062,14 +1046,14 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			dec_aHL(gb);
 			break;
 		case 0x36: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_aHL_n8(gb, n8);
 		} break;
 		case 0x37:
 			scf(gb);
 			break;
 		case 0x38: {
-			i8 offset = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
+			i8 offset = (i8)cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			jr_cc_n16(gb, C, true, offset);
 			break;
 		}
@@ -1089,7 +1073,7 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			dec_r8(gb, &gb->cpu.regs[AF].high);
 			break;
 		case 0x3E: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_r8_n8(gb, &gb->cpu.regs[AF].high, n8);
 		} break;
 		case 0x3F:
@@ -1486,17 +1470,17 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			pop_r16(gb, &gb->cpu.regs[BC].full);
 			break;
 		case 0xC2: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			jp_cc_n16(gb, Z, false, n16);
 			break;
 		}
 		case 0xC3: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			jp_n16(gb, n16);
 			break;
 		}
 		case 0xC4: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			call_cc_n16(gb, Z, false, n16);
 			break;
 		}
@@ -1504,7 +1488,7 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			push_r16(gb, gb->cpu.regs[BC].full);
 			break;
 		case 0xC6: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			add_A_n8(gb, n8);
 			break;
 		}
@@ -1518,7 +1502,7 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			ret(gb);
 			break;
 		case 0xCA: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			jp_cc_n16(gb, Z, true, n16);
 			break;
 		}
@@ -1527,17 +1511,17 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			gb->cpu.regs[PC].full += 1;
 			break;
 		case 0xCC: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			call_cc_n16(gb, Z, true, n16);
 			break;
 		}
 		case 0xCD: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			call_n16(gb, n16);
 			break;
 		}
 		case 0xCE: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			adc_A_n8(gb, n8);
 			break;
 		}
@@ -1551,12 +1535,12 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			pop_r16(gb, &gb->cpu.regs[DE].full);
 			break;
 		case 0xD2: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			jp_cc_n16(gb, C, false, n16);
 			break;
 		}
 		case 0xD4: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			call_cc_n16(gb, C, false, n16);
 			break;
 		}
@@ -1564,7 +1548,7 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			push_r16(gb, gb->cpu.regs[DE].full);
 			break;
 		case 0xD6: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			sub_A_n8(gb, n8);
 			break;
 		}
@@ -1578,17 +1562,17 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			reti(gb);
 			break;
 		case 0xDA: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			jp_cc_n16(gb, C, true, n16);
 			break;
 		}
 		case 0xDC: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			call_cc_n16(gb, C, true, n16);
 			break;
 		}
 		case 0xDE: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			sbc_A_n8(gb, n8);
 			break;
 		}
@@ -1596,7 +1580,7 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			rst(gb, 0x18);
 			break;
 		case 0xE0: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			ldh_addr16_A(gb, 0xFF00 + n8);
 			break;
 		}
@@ -1610,33 +1594,33 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			push_r16(gb, gb->cpu.regs[HL].full);
 			break;
 		case 0xE6: {
-			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			and_A_n8(gb, n8);
 		} break;
 		case 0xE7:
 			rst(gb, 0x20);
 			break;
 		case 0xE8: {
-			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			add_SP_n8(gb, n8);
 		} break;
 		case 0xE9:
 			jp_aHL(gb);
 			break;
 		case 0xEA: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_addr16_A(gb, n16);
 			break;
 		}
 		case 0xEE: {
-			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			xor_A_n8(gb, n8);
 		} break;
 		case 0xEF:
 			rst(gb, 0x28);
 			break;
 		case 0xF0: {
-			u8 n8 = read8(gb, gb->cpu.regs[PC].full + 1);
+			u8 n8 = cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			ldh_A_addr16(gb, 0xFF00 + n8);
 			break;
 		}
@@ -1653,21 +1637,21 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			push_AF(gb);
 			break;
 		case 0xF6: {
-			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			or_A_n8(gb, n8);
 		} break;
 		case 0xF7:
 			rst(gb, 0x30);
 			break;
 		case 0xF8: {
-			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			ld_HL_SPe8(gb, n8);
 		} break;
 		case 0xF9:
 			ld_SP_HL(gb);
 			break;
 		case 0xFA: {
-			u16 n16 = read16(gb, gb->cpu.regs[PC].full + 1);
+			u16 n16 = cpu_read16(gb, gb->cpu.regs[PC].full + 1);
 			ld_A_addr16(gb, n16);
 			break;
 		}
@@ -1675,7 +1659,7 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			ei(gb);
 			break;
 		case 0xFE: {
-			i8 n8 = (i8)read8(gb, gb->cpu.regs[PC].full + 1);
+			i8 n8 = (i8)cpu_read8(gb, gb->cpu.regs[PC].full + 1);
 			cp_A_n8(gb, n8);
 		} break;
 		case 0xFF:
@@ -1683,14 +1667,12 @@ static void opcode_execute(const u8 opcode, Gameboy *gb) {
 			break;
 		default:
 			gb->cpu.regs[PC].full += 1;
-			gb->cpu.cycle += 1;
 			break;
 		}
 	}
 }
 
 static void gameboy_step(Gameboy *gb) {
-	u64 cycle_pre = gb->cpu.cycle;
 	bool ime_pending_old = gb->cpu.ime_pending;
 	// Used for HALT handling; See interrupt_handle() for explanation on the ANDs
 	bool int_pending = gb->memory.ie & gb->memory.io_registers[IF_ADDR - IO_REGS_ADDR] & 0x1F;
@@ -1702,7 +1684,7 @@ static void gameboy_step(Gameboy *gb) {
 		 * As soon as an interrupt becomes pending, the CPU resumes execution. This is like
 		 * the above (note: refering to the else case), except that the handler is not called.
 		 */
-		++gb->cpu.cycle;
+		cpu_tick(gb);
 	} else {
 		/*
 		 * If the IME flag is set (halt = true, halt_bug = false):
@@ -1711,7 +1693,7 @@ static void gameboy_step(Gameboy *gb) {
 		 */
 		gb->cpu.halted = false;
 		if (!interrupt_handle(gb)) {
-			u8 opcode = read8(gb, gb->cpu.regs[PC].full);
+			u8 opcode = cpu_read8(gb, gb->cpu.regs[PC].full);
 			/*
 			 * If the IME flag is not set, and some interrupt is pending (halt = false, halt_bug = true):
 			 * The CPU continues execution after the HALT, but the byte after it is
@@ -1741,124 +1723,86 @@ static void gameboy_step(Gameboy *gb) {
 			}
 		}
 	}
-
-	u64 cycles_elapsed = gb->cpu.cycle - cycle_pre;
-	timer_advance(gb, cycles_elapsed);
 }
 
 static bool interrupt_handle(Gameboy *gb) {
-	// - IF says which interrupts are requested, IE which are enabled
-	// e.g. VBLANK and TIMER enabled, SERIAL and TIMER requested -> only TIMER interrupt is executed
-	// - 0x1F because only bits 4-0 are used in both IF and IE; bits 7-5 are unused
+	/*
+	 * - IF says which interrupts are requested, IE which are enabled
+	 * e.g. VBLANK and TIMER enabled, SERIAL and TIMER requested -> only TIMER interrupt is executed
+	 * - 0x1F because only bits 4-0 are used in both IF and IE; bits 7-5 are unused
+	 * IF and IE register accesses don't use the cpu_ read and write functions because, on the
+	 * console, the CPU can directly see them, so it doesn't access them through memory access.
+	 */
 	u8 gb_if = read8(gb, IF_ADDR);
-	u8 gb_ef = read8(gb, IE_ADDR);
-	u8 pending = gb_if & gb_ef & 0x1F;
+	u8 gb_ie = read8(gb, IE_ADDR);
+	u8 pending = gb_if & gb_ie & 0x1F;
 
-	if (!pending || !gb->cpu.ime) return false;
+	if (!pending || !gb->cpu.ime) {
+		return false;
+	}
 
 	// "When an interrupt handler is executed: Disables interrupts before calling the interrupt handler"
 	gb->cpu.ime_pending = false;
 	gb->cpu.ime = false;
 
-	// Store the PC on stack and jump to the interrupt's source address
-	// Need to do it in 2 parts, though - first the high byte then the low byte
-	// It needs to be so because one write can overwrite IE, so there's a need to check for it
+	/* https://gist.github.com/SonoSooS/c0055300670d678b5ae8433e20bea595#user-content-isr-and-nmi
+	 * The whole thing takes 5 cycles, but I only advance the tick in the two cpu_write8() functions
+	 * Hence why I need 3x additional ticks. The ticks go before the pushes because that's when the
+	 * hardware spends those 3 cycles. On the actual hardware, the previous instruction has already
+	 * fetched the next opcode in its last cycle before the CPU services the interrupt, so it gets
+	 * thrown away, and the PC increment from that fetch needs to be reverted.
+	 * In order, the 5 cycles are: (1) discarded opcode fetch, (2) PC decrement, (3) SP decrement,
+	 * (4) push high, and (5) push low.
+	 */
+	cpu_tick(gb); // discarded opcode
+	cpu_tick(gb); // hardware undoes its PC increment; my PC never moved, so nothing to undo here
+
+	/*
+	 * Store the PC on stack and jump to the interrupt's source address
+	 * Need to do it in 2 parts, though - first the high byte then the low byte
+	 * It needs to be so because one write can overwrite IE, so there's a need to check for it
+	 */
+	cpu_tick(gb); // Decrementing the SP takes one tick
 	--gb->cpu.regs[SP].full;
-	write8(gb, gb->cpu.regs[SP].full, gb->cpu.regs[PC].high);
+	/*
+	 * The pushes DO use cpu_write functions because they just use normal memory, so the only way
+	 * CPU can get the byte in there is over the bus - address out, data out - one M-cycle.
+	 */
+	cpu_write8(gb, gb->cpu.regs[SP].full, gb->cpu.regs[PC].high);
 
 	// In order: VBLANK, STAT, TIMER, SERIAL, JOYPAD
 	static const u16 sources[] = {0x0040, 0x0048, 0x0050, 0x0058, 0x0060};
 
 	// Since a write can overwrite IE, need to check it again
 	gb_if = read8(gb, IF_ADDR);
-	gb_ef = read8(gb, IE_ADDR);
-	pending = gb_if & gb_ef & 0x1F;
+	gb_ie = read8(gb, IE_ADDR);
+	pending = gb_if & gb_ie & 0x1F;
 
 	int interrupt = 0;
 	if (pending) {
-		// - Get the source[] index of first pending interrupt to execute
-		// sources[] is in order of importance, so first hit is the one to execute
-		// - Even though it increments each time it's fine because only the most
-		// important bit is what matters for the comparison
-		while ((pending & (1u << interrupt)) == 0) ++interrupt;
+		/*
+		 * - Get the source[] index of first pending interrupt to execute
+		 * sources[] is in order of importance, so first hit is the one to execute
+		 * - Even though the index increments each time it's fine because the loop stops at
+		 * the lowest set bit, which is the most important interrupt
+		 */
+		while ((pending & (1u << interrupt)) == 0) {
+			++interrupt;
+		}
 
 		// Clear the IF bit of executed interrupt
 		write8(gb, IF_ADDR, gb_if & ~(1u << interrupt));
 	}
 
 	--gb->cpu.regs[SP].full;
-	write8(gb, gb->cpu.regs[SP].full, gb->cpu.regs[PC].low);
+	cpu_write8(gb, gb->cpu.regs[SP].full, gb->cpu.regs[PC].low);
 
-	// "The written value is $02, which clears the INTR_TIMER bit and cancels the
-	// interrupt dispatch. PC is set to $0000 instead of the normal jump address."
-	// - "acceptance/interrupts/ie_push", Round 1
+	/*
+	 * "The written value is $02, which clears the INTR_TIMER bit and cancels the
+	 * interrupt dispatch. PC is set to $0000 instead of the normal jump address."
+	 * - "acceptance/interrupts/ie_push", Round 1
+	 */
 	gb->cpu.regs[PC].full = pending ? sources[interrupt] : 0x0000;
 
-	gb->cpu.cycle += 5;
-
 	return true;
-}
-
-/*
- * TODO: There is really only one timer, and DIV is the timer's upper 8 bits - model it like that
- * 1. Remove TimerCounters (gameboy.h:102)
- * 2. Think about how to connect DIV in io[] and the global timer
- * 3. Change %= cycles_elapsed to CYCLES_PER_DIV (redundant with universal timer?)
- * 4. Also, use a while loop for tac (e.g. TAC_01 is 16 cycles per increment,
- *    some instructions are longer than that) (redundant with universal timer?)
- * 5. The timer should also tick before memory read and writes. For example, let's say opcode fetch
- *    takes up 1 cycle and fetching the operand byte takes another cycle - then, if we read DIV, we
- *    need the timer to already be advanced by those operations. If we just advance the timer at the
- *    end of each instructions (e.g. +3 at the end of it), the DIV that we read might be incorrect.
- * 6. DIV is kinda a fake register, writes to it should change the underlying timer (e.g. return timer >> 8;)
- */
-static void timer_advance(Gameboy *gb, const u64 cycles_elapsed) {
-	u8 *div = &gb->memory.io_registers[DIV_ADDR - IO_REGS_ADDR];
-	u64 *div_timer = &gb->timer.div_elapsed;
-
-	*div_timer += cycles_elapsed;
-	if (*div_timer >= CYCLES_PER_DIV) {
-		++(*div);
-		*div_timer %= cycles_elapsed;
-	}
-
-	u8 *tima = &gb->memory.io_registers[TIMA_ADDR - IO_REGS_ADDR];
-	u8 *tma = &gb->memory.io_registers[TMA_ADDR - IO_REGS_ADDR];
-	u8 *tac = &gb->memory.io_registers[TAC_ADDR - IO_REGS_ADDR];
-	u64 *tima_timer = &gb->timer.tima_elapsed;
-
-	int tac_increment = 0;
-	// Bits 0 and 1 of tac set the frequency at which TIMA is incremented
-	switch (*tac & 0x03) {
-	case 0x00: {
-		tac_increment = TAC_00_CYCLES;
-		break;
-	}
-	case 0x01: {
-		tac_increment = TAC_01_CYCLES;
-		break;
-	}
-	case 0x02: {
-		tac_increment = TAC_10_CYCLES;
-		break;
-	}
-	case 0x03: {
-		tac_increment = TAC_11_CYCLES;
-		break;
-	}
-	}
-
-	// Bit 2 of tac decides whether TIMA is incremented or not
-	if (*tac & 0x04) {
-		*tima_timer += cycles_elapsed;
-		if (*tima_timer >= tac_increment) {
-			if (*tima == 0xFF) {
-				*tima = *tma;
-				// TODO: request an interrupt
-			} else {
-				++(*tima);
-			}
-			*tima_timer %= cycles_elapsed;
-		}
-	}
 }

@@ -1,7 +1,6 @@
 ColumnLimit: 0
-AllowShortIfStatementsOnASingleLine: AllIfsAndElse
-AllowShortLoopsOnASingleLine: true
 AlignConsecutiveMacros: true
+InsertBraces: true
 UseTab: Always
 TabWidth: 8
 IndentWidth: 8

@@ -5,4 +5,5 @@
 #include "cpu.c"
 #include "memory.c"
 #include "gameboy.c"
+#include "timer.c"
 // clang-format on

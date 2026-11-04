@@ -4,42 +4,65 @@
 #include <assert.h>
 
 /*
- * TODO: Remember to write the assert for read-only addresses when
- * implementing mbc1_write()
+ * The CPU versions of write and read are there because, when the CPU issues those memory accesses,
+ * the timer should tick - for example, when the CPU fetches an operand, the timer should tick once.
+ * When it fetches another byte, it should tick again. This gets rid of plain ++cycle
+ * increments everywhere and allows for more precise implementation of the timer.
  */
+
+static void cpu_write16(Gameboy *gb, const u16 addr, const u16 val) {
+	cpu_write8(gb, addr, val);
+	cpu_write8(gb, addr + 1, val >> 8);
+}
 
 static void write16(Gameboy *gb, const u16 addr, const u16 val) {
 	write8(gb, addr, val);
 	write8(gb, addr + 1, val >> 8);
 }
 
+static u16 cpu_read16(Gameboy *gb, const u16 addr) {
+	u8 low = cpu_read8(gb, addr);
+	u8 high = cpu_read8(gb, addr + 1);
+	return low | (high << 8);
+}
+
 static u16 read16(const Gameboy *gb, const u16 addr) {
-	return read8(gb, addr) | (read8(gb, addr + 1) << 8);
+	u8 low = read8(gb, addr);
+	u8 high = read8(gb, addr + 1);
+	return low | (high << 8);
 }
 
 // addresses: https://gbdev.io/pandocs/MBC1.html
 static void mbc1_write(Gameboy *gb, const u16 addr, const u8 val) {
 	if (addr < 0x2000) { // RAM enable
-		if ((val & 0x0F) == 0x0A)
+		if ((val & 0x0F) == 0x0A) {
 			gb->mbc1.ram_enable = true;
-		else
+		} else {
 			gb->mbc1.ram_enable = false;
+		}
 	} else if (addr < 0x4000) { // ROM bank number
 		gb->mbc1.first_rom_bank_reg = val & 0x1F;
 		gb->rom.current_rom_bank = (gb->mbc1.second_rom_bank_reg << 5) + gb->mbc1.first_rom_bank_reg;
 		gb->rom.current_rom_bank &= gb->rom.max_rom_banks - 1;
-		if (gb->rom.current_rom_bank == 0) gb->rom.current_rom_bank = 1;
+		if (gb->rom.current_rom_bank == 0) {
+			gb->rom.current_rom_bank = 1;
+		}
 	} else if (addr < 0x6000) { // RAM bank number/upper bits of ROM bank number
 		gb->mbc1.second_rom_bank_reg = val & 0x03;
 		gb->rom.current_rom_bank = (gb->mbc1.second_rom_bank_reg << 5) + gb->mbc1.first_rom_bank_reg;
 		gb->rom.current_rom_bank &= gb->rom.max_rom_banks - 1;
-		if (gb->rom.current_rom_bank == 0) gb->rom.current_rom_bank = 1;
-		if (gb->mbc1.banking_mode_is_advanced) gb->rom.current_ram_bank = val & 0x03;
+		if (gb->rom.current_rom_bank == 0) {
+			gb->rom.current_rom_bank = 1;
+		}
+		if (gb->mbc1.banking_mode_is_advanced) {
+			gb->rom.current_ram_bank = val & 0x03;
+		}
 	} else if (addr < 0x8000) { // banking mode select
 		gb->mbc1.banking_mode_is_advanced = val & 0x01;
 	} else { // ofc vram is in between extern ram and rom banks, but that gets distinguished in write8
-		if (gb->mbc1.ram_enable)
+		if (gb->mbc1.ram_enable) {
 			gb->rom.external_ram[(addr - EXTERN_RAM_ADDR) + (gb->rom.current_ram_bank * EXTERN_RAM_SIZE)] = val;
+		}
 	}
 }
 
@@ -57,6 +80,11 @@ static void rom_write(Gameboy *gb, const u16 addr, const u8 val) {
 		assert(!"rom_write(): Unimplemented MCB\n");
 		break;
 	}
+}
+
+static void cpu_write8(Gameboy *gb, const u16 addr, const u8 val) {
+	cpu_tick(gb);
+	write8(gb, addr, val);
 }
 
 static void write8(Gameboy *gb, const u16 addr, const u8 val) {
@@ -88,8 +116,7 @@ static void write8(Gameboy *gb, const u16 addr, const u8 val) {
 		} else if (addr == SERIAL_TRANSFER) {
 			platform_serial_print(val);
 		} else if (addr == DIV_ADDR) {
-			gb->memory.io_registers[addr - IO_REGS_ADDR] = 0;
-			gb->timer.div_elapsed = 0;
+			gb->timer = 0;
 		} else if (addr == IF_ADDR) {
 			gb->memory.io_registers[addr - IO_REGS_ADDR] = val;
 			gb->memory.io_registers[addr - IO_REGS_ADDR] |= 0xE0;
@@ -119,13 +146,17 @@ static u8 mbc1_read(const Gameboy *gb, const u16 addr) {
 		u16 address_actual = (addr - ROM_BANK_N_ADDR) + (ROM_BANK_SIZE * gb->rom.current_rom_bank);
 		return gb->rom.game_rom[address_actual];
 	} else { // RAM bank 00-03 (if any)
-		if (!gb->mbc1.ram_enable) return 0xFF;
+		if (!gb->mbc1.ram_enable) {
+			return 0xFF;
+		}
 		return gb->rom.external_ram[(addr - EXTERN_RAM_ADDR) + (gb->rom.current_ram_bank * EXTERN_RAM_SIZE)];
 	}
 }
 
 static u8 rom_read(const Gameboy *gb, const u16 addr) {
-	if (gb->rom.boot_rom_enabled && addr <= 0x00FF) return gb->rom.boot_rom[addr];
+	if (gb->rom.boot_rom_enabled && addr <= 0x00FF) {
+		return gb->rom.boot_rom[addr];
+	}
 
 	switch (gb->rom.cartridge_header.cartridge_type) {
 	case 0x00:
@@ -140,38 +171,64 @@ static u8 rom_read(const Gameboy *gb, const u16 addr) {
 	}
 }
 
+static u8 cpu_read8(Gameboy *gb, const u16 addr) {
+	cpu_tick(gb);
+	return read8(gb, addr);
+}
+
 static u8 read8(const Gameboy *gb, const u16 addr) {
 #ifdef CPU_TEST
 	return gb->memory.test_memory[addr];
 #else
-	if (addr < ROM_BANK_N_ADDR)
+	if (addr < ROM_BANK_N_ADDR) {
 		return rom_read(gb, addr);
-	else if (addr < VRAM_ADDR)
+	} else if (addr < VRAM_ADDR) {
 		return rom_read(gb, addr);
-	else if (addr < EXTERN_RAM_ADDR)
+	} else if (addr < EXTERN_RAM_ADDR) {
 		return gb->memory.vram[addr - VRAM_ADDR];
-	else if (addr < WRAM_0_ADDR)
+	} else if (addr < WRAM_0_ADDR) {
 		return rom_read(gb, addr);
-	else if (addr < WRAM_N_ADDR)
+	} else if (addr < WRAM_N_ADDR) {
 		return gb->memory.ram[addr - WRAM_0_ADDR];
-	else if (addr < ECHO_RAM_ADDR)
+	} else if (addr < ECHO_RAM_ADDR) {
 		return gb->memory.ram[addr - WRAM_0_ADDR];
-	else if (addr < OAM_ADDR) {
+	} else if (addr < OAM_ADDR) {
 		return gb->memory.ram[addr - ECHO_RAM_ADDR];
-	} else if (addr < INVAL_MEM_ADDR)
+	} else if (addr < INVAL_MEM_ADDR) {
 		return gb->memory.oam[addr - OAM_ADDR];
-	else if (addr < IO_REGS_ADDR) {
+	} else if (addr < IO_REGS_ADDR) {
 		return 0;
 	} else if (addr < HRAM_ADDR) {
-		// https://github.com/Gekkio/mooneye-test-suite?tab=readme-ov-file#passfail-reporting
-		// If you don't have a full Game boy system, pass/fail reporting can be sped up by making
-		// sure LY (0xff44) and SC (0xff02) both return 0xff when read. This will bypass some
-		// unnecessary drawing code and waiting for serial transfer to finish.
-		if ((addr == SERIAL_CONTROL) || (addr == LCD_Y)) return 0xFF;
+		if (addr == DIV_ADDR) {
+			/*
+			 * T-cycle = one tick of the master oscillator, ~4.194304 MHz
+			 * M-cycle = 4 T-cycles, basically everything in the gameboy works on those:
+			 *
+			 * NOP takes 1 M-cycle (4 T-cycles),
+			 * LD A, (HL) takes 2 M-cycles (8 T-cycles; opcode fetch then memory read),
+			 * CALL nn takes 6 M-cycles (24 T-cycles).
+			 *
+			 * Basically, you can use M-cycles for everything, and that's what I do in this emulator.
+			 * But the hardware timer ticks at T-cycles and mine ticks at M-cycles, so instead of just
+			 * returning gb->timer >> 8 I have to multiply it by 4 first
+			 * ((timer * 4) >> 8 == (timer << 2) >> 8 == timer >> 6). Timer in M-cycles is basically
+			 * timer in T-cycles with the lowest 2 bits removed.
+			 */
+			return gb->timer >> 6;
+		}
+		/*
+		 * https://github.com/Gekkio/mooneye-test-suite?tab=readme-ov-file#passfail-reporting
+		 * If you don't have a full Game boy system, pass/fail reporting can be sped up by making
+		 * sure LY (0xff44) and SC (0xff02) both return 0xff when read. This will bypass some
+		 * unnecessary drawing code and waiting for serial transfer to finish.
+		 */
+		if ((addr == SERIAL_CONTROL) || (addr == LCD_Y)) {
+			return 0xFF;
+		}
 		return gb->memory.io_registers[addr - IO_REGS_ADDR];
-	} else if (addr < IE_ADDR)
+	} else if (addr < IE_ADDR) {
 		return gb->memory.hram[addr - HRAM_ADDR];
-	else {
+	} else {
 		return gb->memory.ie;
 	}
 	return 0;

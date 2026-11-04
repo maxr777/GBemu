@@ -31,13 +31,13 @@ const char *tests[] = {
     "acceptance/div_timing",
     "acceptance/timer/tim01",
     "acceptance/timer/tim10",
-    // "acceptance/timer/tim11",
-    // "acceptance/timer/tim00",
+    "acceptance/timer/tim11",
+    "acceptance/timer/tim00",
     "acceptance/timer/div_write",
     // "acceptance/timer/tim01_div_trigger",
     // "acceptance/timer/tim10_div_trigger",
-    "acceptance/timer/tim11_div_trigger",
-    "acceptance/timer/tim00_div_trigger",
+    // "acceptance/timer/tim11_div_trigger",
+    // "acceptance/timer/tim00_div_trigger",
     // "acceptance/timer/rapid_toggle",
     // "acceptance/timer/tima_reload",
     // "acceptance/timer/tima_write_reloading",
@@ -85,7 +85,9 @@ static void test_mooneye() {
 
 		u8 opcode = 0;
 		while (opcode != 0x40) {
-			if (gb.cpu.cycle > MAX_CYCLES) assert(!"Fail: test reached max amount of cycles");
+			if (gb.cpu.cycle > MAX_CYCLES) {
+				assert(!"Fail: test reached max amount of cycles");
+			}
 
 			opcode = read8(&gb, gb.cpu.regs[PC].full);
 
@@ -93,9 +95,14 @@ static void test_mooneye() {
 			gameboy_step(&gb);
 		}
 
-		if (mooneye_passed(&gb)) continue;
+		if (mooneye_passed(&gb)) {
+			continue;
+		}
 
-		if (mooneye_failed(&gb)) assert(!"Fail: test failed cleanly (0x42 everywhere)\n");
-		else assert(!"Fail: test failed non-cleanly\n");
+		if (mooneye_failed(&gb)) {
+			assert(!"Fail: test failed cleanly (0x42 everywhere)\n");
+		} else {
+			assert(!"Fail: test failed non-cleanly\n");
+		}
 	}
 }

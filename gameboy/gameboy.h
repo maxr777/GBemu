@@ -23,9 +23,11 @@ typedef enum {
 	FLAG_COUNT
 } Flags;
 
-// BC = Full 16 bit register
-// B = High 8 bits
-// C = Low 8 bits
+/*
+ * BC = Full 16 bit register
+ * B = High 8 bits
+ * C = Low 8 bits
+ */
 typedef union {
 	u16 full;
 	struct {
@@ -78,8 +80,10 @@ typedef struct {
 	u8 current_rom_bank;
 	int max_rom_banks;
 	u8 current_ram_bank;
-	// multiplied by 4 because of possible RAM banking, if no
-	// RAM banking then we simply can't access anything past 8192
+	/*
+	 * multiplied by 4 because of possible RAM banking, if no
+	 * RAM banking then we simply can't access anything past 8192
+	 */
 	u8 external_ram[EXTERN_RAM_SIZE * 4];
 } ROM;
 
@@ -97,16 +101,11 @@ typedef struct {
 } Memory;
 
 typedef struct {
-	u64 div_elapsed;
-	u64 tima_elapsed;
-} TimerCounters;
-
-typedef struct {
 	CPU cpu;
 	ROM rom;
 	Memory memory;
 	MBC1State mbc1;
-	TimerCounters timer;
+	u16 timer;
 } Gameboy;
 
 // ==================== DECLARATIONS ====================
@@ -247,21 +246,24 @@ static void stop_n8(Gameboy *gb, const u8 val);
 
 // ==================== MEMORY ====================
 
+static void cpu_write16(Gameboy *gb, const u16 addr, const u16 val);
 static void write16(Gameboy *gb, const u16 addr, const u16 val);
+static void cpu_write8(Gameboy *gb, const u16 addr, const u8 val);
 static void write8(Gameboy *gb, const u16 addr, const u8 val);
 static void rom_write(Gameboy *gb, const u16 addr, const u8 val);
 static void mbc1_write(Gameboy *gb, const u16 addr, const u8 val);
 
+static u16 cpu_read16(Gameboy *gb, const u16 addr);
 static u16 read16(const Gameboy *gb, const u16 addr);
+static u8 cpu_read8(Gameboy *gb, const u16 addr);
 static u8 read8(const Gameboy *gb, const u16 addr);
 static u8 rom_read(const Gameboy *gb, const u16 addr);
 static u8 mbc1_read(const Gameboy *gb, const u16 addr);
 
 // ==================== TIMERS ====================
 
-static int tac_cycles_get(const u8 tac);
-static bool tac_enable_get(const u8 tac);
-static void timer_advance(Gameboy *gb, const u64 cycles_elapsed);
+static void timer_tick(Gameboy *gb);
+static void cpu_tick(Gameboy *gb);
 
 // ==================== INTERRUPTS ====================
 
