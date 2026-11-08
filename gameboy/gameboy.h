@@ -262,6 +262,8 @@ static u8 mbc1_read(const Gameboy *gb, const u16 addr);
 
 // ==================== TIMERS ====================
 
+static bool timer_signal(const Gameboy *gb);
+static void tima_update(Gameboy *gb, bool signal_old);
 static void timer_tick(Gameboy *gb);
 static void cpu_tick(Gameboy *gb);
 

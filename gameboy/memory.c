@@ -110,6 +110,7 @@ static void write8(Gameboy *gb, const u16 addr, const u8 val) {
 	} else if (addr < IO_REGS_ADDR) {
 		assert(!"write8: use of 0xFEA0-0xFEFF is prohibited\n");
 	} else if (addr < HRAM_ADDR) {
+		bool timer_signal_old = timer_signal(gb);
 		gb->memory.io_registers[addr - IO_REGS_ADDR] = val;
 		if (addr == BOOT_ROM_DISABLE && val != 0) {
 			gb->rom.boot_rom_enabled = false;
@@ -117,12 +118,14 @@ static void write8(Gameboy *gb, const u16 addr, const u8 val) {
 			platform_serial_print(val);
 		} else if (addr == DIV_ADDR) {
 			gb->timer = 0;
+			tima_update(gb, timer_signal_old);
 		} else if (addr == IF_ADDR) {
 			gb->memory.io_registers[addr - IO_REGS_ADDR] = val;
 			gb->memory.io_registers[addr - IO_REGS_ADDR] |= 0xE0;
 		} else if (addr == TAC_ADDR) {
 			// Bits 7-3 read as ones and have no writeable function
 			gb->memory.io_registers[addr - IO_REGS_ADDR] = val | 0xF8;
+			tima_update(gb, timer_signal_old);
 		}
 	} else if (addr < IE_ADDR) {
 		gb->memory.hram[addr - HRAM_ADDR] = val;

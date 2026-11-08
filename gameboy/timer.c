@@ -1,14 +1,6 @@
 #include "gameboy.h"
 
-static void timer_tick(Gameboy *gb) {
-	// This handles DIV increment, DIV is just bits 13..6 of timer (timer counts M-cycles, see read8)
-	++gb->timer;
-
-	u8 *tima = &gb->memory.io_registers[TIMA_ADDR - IO_REGS_ADDR];
-	u8 *tma = &gb->memory.io_registers[TMA_ADDR - IO_REGS_ADDR];
-	u8 *tac = &gb->memory.io_registers[TAC_ADDR - IO_REGS_ADDR];
-
-	// clang-format off
+// clang-format off
 	/*
 	 * TAC bits:
 	 * 7:
@@ -36,39 +28,43 @@ static void timer_tick(Gameboy *gb) {
 	 *           TAC bit 2 (enable) ───────┘        (output goes 1 → 0)
 	 *
 	 * TAC 00 means that the falling-edge detector watches bit 9. 01 = bit 3, 10 = bit 5, 11 = bit 7.
+	 *
+	 * The function below returns that signal (the bit we're watching and tac enable).
+	 *
+	 * It's used for the TIMA calculations (just looking at cycles wouldn't work, because if we write
+	 * 0 to DIV then the cycles don't detect the change, but the bit we're looking for might've changed
+	 * if it was set to 1 before that write). Use wherever the timer changes.
 	 */
-	// clang-format on
-	int tac_increment = 0;
-	if (*tac & 0x04) {
-		switch (*tac & 0x03) {
-		case 0x00: {
-			tac_increment = TAC_00_CYCLES;
-			break;
-		}
-		case 0x01: {
-			tac_increment = TAC_01_CYCLES;
-			break;
-		}
-		case 0x02: {
-			tac_increment = TAC_10_CYCLES;
-			break;
-		}
-		case 0x03: {
-			tac_increment = TAC_11_CYCLES;
-			break;
-		}
-		}
+// clang-format on
+static bool timer_signal(const Gameboy *gb) {
+	const u8 bit[] = {7, 1, 3, 5};
+	u8 tac = gb->memory.io_registers[TAC_ADDR - IO_REGS_ADDR];
+	// Basically the diagram above: return tac enable AND that one bit from the timer we're watching
+	return (tac & 0x04) && (gb->timer & (1u << bit[tac & 0x03]));
+}
 
-		if (gb->timer % tac_increment == 0) {
-			// If TIMA overflows, set it to the value in TMA and request an interrupt
-			if (*tima == 0xFF) {
-				*tima = *tma;
-				// TODO: request an interrupt
-			} else {
-				++(*tima);
-			}
+static void tima_update(Gameboy *gb, bool signal_old) {
+	u8 *tima = &gb->memory.io_registers[TIMA_ADDR - IO_REGS_ADDR];
+	u8 *tma = &gb->memory.io_registers[TMA_ADDR - IO_REGS_ADDR];
+
+	// Only actual hardware timer reacts only on falling edges, so 1 -> 0
+	if (signal_old && !timer_signal(gb)) {
+		// If TIMA overflows, set it to the value in TMA and request an interrupt
+		if (*tima == 0xFF) {
+			*tima = *tma;
+			// TODO: request an interrupt
+		} else {
+			++(*tima);
 		}
 	}
+}
+
+static void timer_tick(Gameboy *gb) {
+	bool old = timer_signal(gb);
+	// This handles DIV increment, DIV is just bits 13..6 of timer (timer counts M-cycles, see read8)
+	++gb->timer;
+
+	tima_update(gb, old);
 }
 
 static void cpu_tick(Gameboy *gb) {
