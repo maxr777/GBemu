@@ -66,14 +66,16 @@ static void timer_tick(Gameboy *gb) {
 	 */
 	switch (*state) {
 	case TIMA_OVERFLOWED: {
-		*state = TIMA_NORMAL;
+		*state = TIMA_RELOADING;
 		*tima = *tma;
 		// Request an interrupt (0x04 == TIMER interrupt)
 		gb->memory.io_registers[IF_ADDR - IO_REGS_ADDR] |= 0x04;
 		break;
 	}
-	default:
+	default: {
+		*state = TIMA_NORMAL;
 		break;
+	}
 	}
 
 	bool old = timer_signal(gb);

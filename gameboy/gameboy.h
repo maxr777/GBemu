@@ -103,6 +103,7 @@ typedef struct {
 typedef enum {
 	TIMA_NORMAL,
 	TIMA_OVERFLOWED,
+	TIMA_RELOADING,
 } TimaState;
 
 typedef struct {

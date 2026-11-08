@@ -40,8 +40,8 @@ const char *tests[] = {
     "acceptance/timer/tim00_div_trigger",
     "acceptance/timer/rapid_toggle",
     "acceptance/timer/tima_reload",
-    // "acceptance/timer/tima_write_reloading",
-    // "acceptance/timer/tma_write_reloading",
+    "acceptance/timer/tima_write_reloading",
+    "acceptance/timer/tma_write_reloading",
 };
 
 #define TEST_COUNT (sizeof(tests) / sizeof(tests[0]))

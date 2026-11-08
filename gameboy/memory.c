@@ -83,8 +83,8 @@ static void rom_write(Gameboy *gb, const u16 addr, const u8 val) {
 }
 
 static void cpu_write8(Gameboy *gb, const u16 addr, const u8 val) {
-	cpu_tick(gb);
 	write8(gb, addr, val);
+	cpu_tick(gb);
 }
 
 static void write8(Gameboy *gb, const u16 addr, const u8 val) {
@@ -110,22 +110,86 @@ static void write8(Gameboy *gb, const u16 addr, const u8 val) {
 	} else if (addr < IO_REGS_ADDR) {
 		assert(!"write8: use of 0xFEA0-0xFEFF is prohibited\n");
 	} else if (addr < HRAM_ADDR) {
+		u8 *reg = &gb->memory.io_registers[addr - IO_REGS_ADDR];
 		bool timer_signal_old = timer_signal(gb);
-		gb->memory.io_registers[addr - IO_REGS_ADDR] = val;
-		if (addr == BOOT_ROM_DISABLE && val != 0) {
-			gb->rom.boot_rom_enabled = false;
-		} else if (addr == SERIAL_TRANSFER) {
+
+		/*
+		 * Each register does its own store, so it can decide whether (and how) the write lands.
+		 * Registers without special behavior just store the value in the default case.
+		 */
+		switch (addr) {
+		case BOOT_ROM_DISABLE: {
+			*reg = val;
+			if (val != 0) {
+				gb->rom.boot_rom_enabled = false;
+			}
+			break;
+		}
+		case SERIAL_TRANSFER: {
+			*reg = val;
 			platform_serial_print(val);
-		} else if (addr == DIV_ADDR) {
+			break;
+		}
+		case DIV_ADDR: {
+			/*
+			 * Writing to DIV sets the timer to 0.
+			 * DIV is read from gb->timer, so we don't need to use io_registers
+			 */
 			gb->timer = 0;
 			tima_update(gb, timer_signal_old);
-		} else if (addr == IF_ADDR) {
-			gb->memory.io_registers[addr - IO_REGS_ADDR] = val;
-			gb->memory.io_registers[addr - IO_REGS_ADDR] |= 0xE0;
-		} else if (addr == TAC_ADDR) {
+			break;
+		}
+		case IF_ADDR: {
+			*reg = val | 0xE0;
+			break;
+		}
+		case TIMA_ADDR: {
+			/*
+			 * https://gbdev.io/pandocs/Timer_Obscure_Behaviour.html#timer-overflow-behavior
+			 *
+			 * Writing to TIMA during cycle B (TIMA_RELOADING) will be ignored; TIMA will
+			 * be equal to TMA at the end of the cycle anyway.
+			 */
+			if (gb->tima_state == TIMA_RELOADING) {
+				break;
+			}
+			/*
+			 * https://gbdev.io/pandocs/Timer_Obscure_Behaviour.html#timer-overflow-behavior
+			 *
+			 * Writing to TIMA during cycle A (TIMA_OVERFLOWED here) acts as if the overflow
+			 * didn’t happen! TMA will not be copied to TIMA (the value written will therefore
+			 * stay), and bit 2 of IF will not be set. Writing to DIV, TAC, or other registers
+			 * won’t prevent the IF flag from being set or TIMA from being reloaded.
+			 */
+			if (gb->tima_state == TIMA_OVERFLOWED) {
+				gb->tima_state = TIMA_NORMAL;
+			}
+			*reg = val;
+			break;
+		}
+		case TMA_ADDR: {
+			*reg = val;
+			/*
+			 * https://gbdev.io/pandocs/Timer_Obscure_Behaviour.html#timer-overflow-behavior
+			 *
+			 * Writing to TMA during cycle B (TIMA_RELOADING) will have the same
+			 * value copied to TIMA as well, on the same cycle.
+			 */
+			if (gb->tima_state == TIMA_RELOADING) {
+				gb->memory.io_registers[TIMA_ADDR - IO_REGS_ADDR] = val;
+			}
+			break;
+		}
+		case TAC_ADDR: {
 			// Bits 7-3 read as ones and have no writeable function
-			gb->memory.io_registers[addr - IO_REGS_ADDR] = val | 0xF8;
+			*reg = val | 0xF8;
 			tima_update(gb, timer_signal_old);
+			break;
+		}
+		default: {
+			*reg = val;
+			break;
+		}
 		}
 	} else if (addr < IE_ADDR) {
 		gb->memory.hram[addr - HRAM_ADDR] = val;
@@ -175,8 +239,9 @@ static u8 rom_read(const Gameboy *gb, const u16 addr) {
 }
 
 static u8 cpu_read8(Gameboy *gb, const u16 addr) {
+	u8 val = read8(gb, addr);
 	cpu_tick(gb);
-	return read8(gb, addr);
+	return val;
 }
 
 static u8 read8(const Gameboy *gb, const u16 addr) {
