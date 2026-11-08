@@ -22,9 +22,10 @@ const char *tests[] = {
     "acceptance/reti_intr_timing",
 
     // HALT behavior is coupled to pending interrupts and IME.
+    // Commented out tests rely on LY and VBlank interrupt
     // "acceptance/halt_ime0_ei",
     // "acceptance/halt_ime0_nointr_timing",
-    // "acceptance/halt_ime1_timing",
+    "acceptance/halt_ime1_timing",
     // "acceptance/halt_ime1_timing2-GS",
 
     // Divider and timer behavior

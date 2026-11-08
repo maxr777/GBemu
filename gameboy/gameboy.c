@@ -1692,7 +1692,12 @@ static void gameboy_step(Gameboy *gb) {
 		 * The handler is executed normally, and the CPU resumes execution after the HALT when that returns.
 		 */
 		gb->cpu.halted = false;
-		if (!interrupt_handle(gb)) {
+		/*
+		 * 0xCB xx is actually just one instruction, so don't dispatch an interrupt while a prefix is pending.
+		 * An actual fix would be to have 0xCB fetch another opcode and execute it too, but it would require
+		 * too much code change for 0 benefit (CPU tests already rely on 0xCB being separate too).
+		 */
+		if (gb->cpu.prefix || !interrupt_handle(gb)) {
 			u8 opcode = cpu_read8(gb, gb->cpu.regs[PC].full);
 			/*
 			 * If the IME flag is not set, and some interrupt is pending (halt = false, halt_bug = true):

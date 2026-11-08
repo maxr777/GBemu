@@ -87,6 +87,16 @@ static void cpu_write8(Gameboy *gb, const u16 addr, const u8 val) {
 	cpu_tick(gb);
 }
 
+/*
+ * Regarding tima_update() calls in write8:
+ * Since real hardware runs on T-cycles (this emulator uses M-cycles; 1M = 4T), it's possible
+ * that TIMA overflows as we're writing to it (e.g. we write to DIV or TAC which causes a falling
+ * edge, thus signal change), but it's tricky to implement it here since we use M-cycles which
+ * aren't that granular. The tick at the end of the M-cycle reloads straight away, which means no
+ * later accesses can see the TIMA_OVERFLOWED state. Since that would require writing to DIV
+ * or TAC at exactly the overflow moment and then immediately reading TIMA afterwards, it's VERY
+ * unlikely to happen, but still - it's not 100% accurate.
+ */
 static void write8(Gameboy *gb, const u16 addr, const u8 val) {
 #ifdef CPU_TEST
 	gb->memory.test_memory[addr] = val;
@@ -136,6 +146,7 @@ static void write8(Gameboy *gb, const u16 addr, const u8 val) {
 			 * DIV is read from gb->timer, so we don't need to use io_registers
 			 */
 			gb->timer = 0;
+			// See note at the top of write8()
 			tima_update(gb, timer_signal_old);
 			break;
 		}
@@ -183,6 +194,7 @@ static void write8(Gameboy *gb, const u16 addr, const u8 val) {
 		case TAC_ADDR: {
 			// Bits 7-3 read as ones and have no writeable function
 			*reg = val | 0xF8;
+			// See note at the top of write8()
 			tima_update(gb, timer_signal_old);
 			break;
 		}
