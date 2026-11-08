@@ -38,8 +38,8 @@ const char *tests[] = {
     "acceptance/timer/tim10_div_trigger",
     "acceptance/timer/tim11_div_trigger",
     "acceptance/timer/tim00_div_trigger",
-    // "acceptance/timer/rapid_toggle",
-    // "acceptance/timer/tima_reload",
+    "acceptance/timer/rapid_toggle",
+    "acceptance/timer/tima_reload",
     // "acceptance/timer/tima_write_reloading",
     // "acceptance/timer/tma_write_reloading",
 };

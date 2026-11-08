@@ -100,12 +100,18 @@ typedef struct {
 	u8 ie;
 } Memory;
 
+typedef enum {
+	TIMA_NORMAL,
+	TIMA_OVERFLOWED,
+} TimaState;
+
 typedef struct {
 	CPU cpu;
 	ROM rom;
 	Memory memory;
 	MBC1State mbc1;
 	u16 timer;
+	TimaState tima_state;
 } Gameboy;
 
 // ==================== DECLARATIONS ====================

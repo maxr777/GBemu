@@ -45,21 +45,37 @@ static bool timer_signal(const Gameboy *gb) {
 
 static void tima_update(Gameboy *gb, bool signal_old) {
 	u8 *tima = &gb->memory.io_registers[TIMA_ADDR - IO_REGS_ADDR];
-	u8 *tma = &gb->memory.io_registers[TMA_ADDR - IO_REGS_ADDR];
 
 	// Only actual hardware timer reacts only on falling edges, so 1 -> 0
 	if (signal_old && !timer_signal(gb)) {
-		// If TIMA overflows, set it to the value in TMA and request an interrupt
 		if (*tima == 0xFF) {
-			*tima = *tma;
-			// TODO: request an interrupt
-		} else {
-			++(*tima);
+			// Actual overflow code happens in the tima_state switch
+			gb->tima_state = TIMA_OVERFLOWED;
 		}
+		++(*tima);
 	}
 }
 
 static void timer_tick(Gameboy *gb) {
+	u8 *tima = &gb->memory.io_registers[TIMA_ADDR - IO_REGS_ADDR];
+	u8 *tma = &gb->memory.io_registers[TMA_ADDR - IO_REGS_ADDR];
+	TimaState *state = &gb->tima_state;
+
+	/*
+	 * On overflow, TIMA reads 0x00 and IF bit 2 is not set for one cycle
+	 */
+	switch (*state) {
+	case TIMA_OVERFLOWED: {
+		*state = TIMA_NORMAL;
+		*tima = *tma;
+		// Request an interrupt (0x04 == TIMER interrupt)
+		gb->memory.io_registers[IF_ADDR - IO_REGS_ADDR] |= 0x04;
+		break;
+	}
+	default:
+		break;
+	}
+
 	bool old = timer_signal(gb);
 	// This handles DIV increment, DIV is just bits 13..6 of timer (timer counts M-cycles, see read8)
 	++gb->timer;
